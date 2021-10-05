@@ -1,9 +1,11 @@
+#!/usr/bin/env python
 global status_react, cl
 from discord import Webhook, RequestsWebhookAdapter
 import discord,atexit,random,schedule,threading,time,asyncio
 from discord.ext import commands
 from discord_slash import SlashCommand, SlashContext
-from discord_slash.utils.manage_commands import create_choice,create_option
+from discord_slash.utils.manage_commands import create_choice,create_option,create_permission
+from discord_slash.model import SlashCommandPermissionType
 from settings import *
 from functions import *
 cl = []
@@ -38,7 +40,7 @@ async def on_ready():
                 ),
                 create_choice(
                     name="Streaming",
-                    value="Streaming"
+                    value="Streaming e"
                 )              
             ]
         ),
@@ -51,7 +53,7 @@ async def on_ready():
     ]
 )
 async def status(ctx,type,status):
-    embed = discord.Embed(description=f"{type} to {status}",title="Setting Status to")
+    embed = discord.Embed(description=f"{type} {status}",title="Setting Status to")
     message = await ctx.send(embed=embed) 
     if type == "Listening":
         await client.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name=f"{status}"))
@@ -62,7 +64,7 @@ async def status(ctx,type,status):
     elif type == "Playing":
         await client.change_presence(activity=discord.Activity(activity=discord.Game(name=f"{status}")))
         await message.add_reaction(status_react)
-    elif type == "Streaming":
+    elif type == "Streaming": 
         await client.change_presence(activity=discord.Streaming(name=f"{status}",url="https://www.youtube.com/watch?v=dQw4w9WgXcQ"))# you know where the link leads
         await message.add_reaction(status_react)
     else:
@@ -71,6 +73,13 @@ async def status(ctx,type,status):
 @slash.slash(  # mute
     name="mute",
     description="Banish a person into the shadow realm.",
+    permissions={
+              729596658114887730: [
+                create_permission(762898386604130334, SlashCommandPermissionType.ROLE, True),
+                create_permission(778980234908925963, SlashCommandPermissionType.ROLE, True),
+                create_permission(775591193466765322, SlashCommandPermissionType.ROLE, False)
+              ]
+    },
     options=[
         create_option(
             name="member",
@@ -166,10 +175,16 @@ async def mute(ctx,member,time,reason):
     # sends content
     await member.send(embed=unmuteEmbed) # DMs the member the embed we just made 
 
-
 @slash.slash( # unmute
     name="unmute",
     description="unmute a person manually",
+    permissions={
+              729596658114887730: [
+                create_permission(762898386604130334, SlashCommandPermissionType.ROLE, True),
+                create_permission(778980234908925963, SlashCommandPermissionType.ROLE, True),
+                create_permission(729603817435299910, SlashCommandPermissionType.ROLE, False)
+              ]
+    },
     options=[
         create_option(
             name="member",
@@ -214,7 +229,7 @@ async def unmute(ctx, member):
              ])
 async def flip(ctx,side):
     coin = ['heads','tails']
-    embed = discord.Embed(title=f"The 🪙 flipped to {random.choice(coin)}!" )
+    embed = discord.Embed(title=f"The 🪙 flipped to {random.choice(coin)}!" ) # choose random choice and embed and reply
     embed.add_field(
         name="Your choice",
         value=f"{side}"
@@ -223,7 +238,6 @@ async def flip(ctx,side):
 
 @slash.slash(name="ping", # Ping command
 description="Ping pong and view latency",
-guild_ids=guildid
 )
 async def ping(ctx):
     ping = client.latency*1000
@@ -234,7 +248,6 @@ async def ping(ctx):
 @slash.slash( # Command to retrive the class meeting links
     name="classlinks",
     description="Prints class meeting links!",
-    guild_ids=guildid
     )
 async def links(ctx: SlashContext):
     await ctx.send(embeds=[retclasslinks("Class Meetings","Links Go here ↓",cl)])
@@ -252,15 +265,14 @@ def daily_reset():
     cl.clear()
     print("Daily Reset Successful")
     return
-schedule.every().day.at("13:00").do(daily_reset)
+schedule.every().day.at("14:00").do(daily_reset)
 # Post Daily links
 def daily_links():
     webhook = Webhook.from_url(webhooklink, adapter=RequestsWebhookAdapter())
     webhook.send(embeds=[retclasslinks("Time for class","Heres the Links ↓",cl)])     
     print("Sent daily links")
     return
-schedule.every().day.at("07:59").do(daily_links)
-
+schedule.every().day.at("12:00").do(daily_links)
 # daemon thinge
 def schedulerd():
     while True:
@@ -269,7 +281,6 @@ def schedulerd():
 thread = threading.Thread(target=schedulerd)
 thread.daemon = True                            # Daemonize thread
 thread.start()                                  # Start the execution
-
 def exit():
     print("\nExiting...")
     return
