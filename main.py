@@ -1,16 +1,16 @@
 #!/usr/bin/env python
-global status_react,cl,client,slash
+global status_react,cl
+from functions import retclasslinks
+from settings import *
 from discord import Webhook, RequestsWebhookAdapter
 import discord,atexit,schedule,threading,time
 from discord.ext import commands
 from discord_slash import SlashCommand
-from settings import *
-from functions import *
-from utilcmds import *
-
+from utilcmds import cmds
 cl = []
-client = commands.Bot(command_prefix="/", intents=discord.Intents.all())
+client = commands.Bot(command_prefix=prefix, intents=discord.Intents.all())
 slash = SlashCommand(client, sync_commands=True)
+client.add_cog(cmds(client, cl=cl))
 
 @client.event
 async def on_ready():
@@ -38,6 +38,7 @@ def schedulerd():
 thread = threading.Thread(target=schedulerd)
 thread.daemon = True                            # Daemonize thread
 thread.start()                                  # Start the execution
+
 def exit():
     print("\nExiting...")
     return

@@ -12,3 +12,4 @@ def retclasslinks(title,desc,cl):
                mytitle = "Class Link(no title found)"
             classlinkembed.add_field(name='> ' + mytitle ,value=i[i.find('http'):] + '\n\n', inline=False)
     return classlinkembed
+    
