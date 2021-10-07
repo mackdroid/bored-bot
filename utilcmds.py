@@ -1,15 +1,27 @@
-import discord,asyncio,random
-from settings import *
+import discord,asyncio,json
+global vardb,guildID
+with open('settings.json') as json_file:
+    vardb = json.load(json_file)
+guildID = vardb["guildid"]
+perms = {}
+for guildid in vardb["perms"].keys:
+    perms[int(guildid)] = []
+    for allowid in vardb["perms"][f"{guildid}"]["allow"] and denyid in vardb["perms"][f"{guildid}"]["deny"]:
+        perms[int(guildid)].append = create_permission(allowid, SlashCommandPermissionType.ROLE, True),
+        perms[int(guildid)].append = create_permission(denyid, SlashCommandPermissionType.ROLE, False),
+        
+print(perms)
+
 from discord.ext import commands
 from discord_slash.model import SlashCommandPermissionType
 from discord_slash.utils.manage_commands import create_choice,create_option,create_permission
 from discord_slash import SlashContext,cog_ext
 
-class cmds(commands.Cog):
+class utils(commands.Cog):
     def __init__(self, client,cl):
         self.client = client
         self.cl = cl
-
+        
     @cog_ext.cog_slash( # Status
         name="status",
         description="Set bot status!",
@@ -34,7 +46,7 @@ class cmds(commands.Cog):
                     ),
                     create_choice(
                         name="Streaming",
-                        value="Streaming e"
+                        value="Streaming"
                     )              
                 ]
             ),
@@ -51,29 +63,23 @@ class cmds(commands.Cog):
         message = await ctx.send(embed=embed) 
         if type == "Listening":
             await self.client.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name=f"{status}"))
-            await message.add_reaction(status_react)
+            await message.add_reaction(vardb["status_react"])
         elif type == "Watching":
             await self.client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"{status}"))
-            await message.add_reaction(status_react)
+            await message.add_reaction(vardb["status_react"])
         elif type == "Playing":
             await self.client.change_presence(activity=discord.Activity(activity=discord.Game(name=f"{status}")))
-            await message.add_reaction(status_react)
+            await message.add_reaction(vardb["status_react"])
         elif type == "Streaming": 
             await self.client.change_presence(activity=discord.Streaming(name=f"{status}",url="https://www.youtube.com/watch?v=dQw4w9WgXcQ"))# you know where the link leads
-            await message.add_reaction(status_react)
+            await message.add_reaction(vardb["status_react"])
         else:
             await ctx.send("how tf did you get here")
 
     @cog_ext.cog_slash(  # mute
-        name="mute",
+        name="mutee",
         description="Banish a person into the shadow realm.",
-        permissions={
-                  729596658114887730: [
-                    create_permission(762898386604130334, SlashCommandPermissionType.ROLE, True),
-                    create_permission(778980234908925963, SlashCommandPermissionType.ROLE, True),
-                    create_permission(775591193466765322, SlashCommandPermissionType.ROLE, False)
-                  ]
-           },
+        permissions=perms,
         options=[
             create_option(
                 name="member",
@@ -170,15 +176,9 @@ class cmds(commands.Cog):
         await member.send(embed=unmuteEmbed) # DMs the member the embed we just made 
 
     @cog_ext.cog_slash( # unmute
-        name="unmute",
+        name="testunmute",
         description="unmute a person manually",
-        permissions={
-                  729596658114887730: [
-                    create_permission(762898386604130334, SlashCommandPermissionType.ROLE, True),
-                    create_permission(778980234908925963, SlashCommandPermissionType.ROLE, True),
-                    create_permission(729603817435299910, SlashCommandPermissionType.ROLE, False)
-                  ]
-        },
+        permissions=perms,
         options=[
             create_option(
                 name="member",
@@ -201,47 +201,10 @@ class cmds(commands.Cog):
         await member.send(embed=manualunmuteEmbed) # DMs the user the embed we just made 
         await ctx.send(embed=manualunmuteEmbed)
 
-    @cog_ext.cog_slash(name="toss", # Toss a coin 
-             description="Toss a coin, accepts Heads and Tails as input.",
-             options=[
-               create_option(
-                 name="side",
-                 description="Choose a side of the coin.",
-                 option_type=3,
-                 required=True,
-                 choices=[
-                  create_choice(
-                    name="Heads",
-                    value="heads"
-                  ),
-                  create_choice(
-                    name="Tails",
-                    value="tails"
-                  )
-                ]
-               )
-             ])
-    async def flip(self, ctx,side):
-        coin = ['heads','tails']
-        embed = discord.Embed(title=f"The 🪙 flipped to {random.choice(coin)}!" ) # choose random choice and embed and reply
-        embed.add_field(
-            name="Your choice",
-            value=f"{side}"
-            )
-        await ctx.send(embeds=[embed])
-
-    @cog_ext.cog_slash(name="ping", # Ping command
-    description="Ping pong and view latency",
-    )
-    async def ping(self,ctx):
-        ping = self.client.latency*1000
-        embed = discord.Embed(title="Pong! 🏓")
-        embed.set_footer(text=f"{ping} ms")
-        await ctx.send(embeds=[embed]) 
-
     @cog_ext.cog_slash( # Command to retrive the class meeting links
         name="classlinks",
         description="Prints class meeting links!",
+        guild_ids=[vardb["guildid"]]
         )
     async def links(self,ctx: SlashContext):
         from functions import retclasslinks
