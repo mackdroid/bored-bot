@@ -67,7 +67,7 @@ class utils(commands.Cog):
             await ctx.send("how tf did you get here")
 
     @cog_ext.cog_slash(  # mute
-        name="mutee",
+        name="mute",
         description="Banish a person into the shadow realm.",
         permissions=permissions,
         options=[
@@ -166,7 +166,7 @@ class utils(commands.Cog):
         await member.send(embed=unmuteEmbed) # DMs the member the embed we just made 
 
     @cog_ext.cog_slash( # unmute
-        name="testunmute",
+        name="unmute",
         description="unmute a person manually",
         permissions=permissions,
         options=[

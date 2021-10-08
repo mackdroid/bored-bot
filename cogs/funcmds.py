@@ -44,6 +44,6 @@ class funcmds(commands.Cog):
         embed.set_footer(text=f"{ping} ms")
         await ctx.send(embeds=[embed]) 
 
-    @commands.command(aliases=['t', 'tru'])
+    @commands.command(aliases=['t'])
     async def truth(self,ctx):
       await ctx.send("")

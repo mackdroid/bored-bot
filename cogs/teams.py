@@ -14,7 +14,7 @@ class teams(commands.Cog):
             cl.clear()
             print("Daily Reset Successful")
             return
-        schedule.every().day.at("17:33").do(daily_reset)
+        schedule.every().day.at("14:00").do(daily_reset)
         # Post Daily links
         def daily_links():
             webhook = Webhook.from_url(vardb["webhooklink"], adapter=RequestsWebhookAdapter())
