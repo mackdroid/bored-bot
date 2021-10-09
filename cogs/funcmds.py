@@ -51,12 +51,10 @@ class funcmds(commands.Cog):
       await ctx.send("")
     @commands.command(aliases=['m'])
     async def meme(self,ctx):
-      memesubreddits = ["meme","memes","dankmemes"]
-      reddit = praw.Reddit()
-      meme = reddit.subreddit(random.choice(memesubreddits)).random()
-      embed=discord.Embed(title=meme.title)
-      embed.set_footer(text=meme.author)
-      embed.set_image(url=meme.url)
+      meme = json.loads(requests.get("https://meme-api.herokuapp.com/gimme").text)    
+      embed=discord.Embed(title=meme["title"])
+      embed.set_footer(text="u/" + meme["author"] + " in r/" + meme["subreddit"])
+      embed.set_image(url=meme["url"])
       await ctx.send(embed=embed)
 
     @commands.command(aliases=['g'])
