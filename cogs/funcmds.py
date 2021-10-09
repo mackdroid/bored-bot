@@ -87,6 +87,9 @@ class funcmds(commands.Cog):
       elif category == "neko" or category == "cat":
         suffix = f"'s {category}! 🐈"
         apiurl = "https://api.thecatapi.com/v1/images/search"
+      elif category == "waifu":
+        suffix = "heres yer waifu"
+        apiurl = "https://api.waifu.pics/sfw/" + category
       elif category == "dog":
         suffix = random.choice([f"'s {category}! 🐶","doggo!! 🐶"])
         apiurl = "https://api.thedogapi.com/v1/images/search"
@@ -107,5 +110,5 @@ class funcmds(commands.Cog):
         embed.set_image(url=url)
       else:
         embed=discord.Embed(title="Usage", description=f"{dpfx}g/gif [subcategory] [person]")
-        embed.add_field(name="Available Subcategories", value="kick, happy, wink, poke, dance, cringe, neko, cat, dog, kill, highfive, happy", inline=False)
+        embed.add_field(name="Available Subcategories", value="waifu, kick, happy, wink, poke, dance, cringe, neko, cat, dog, kill, highfive, happy", inline=False)
       await ctx.send(embed=embed)
