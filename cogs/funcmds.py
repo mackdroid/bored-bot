@@ -1,4 +1,4 @@
-import discord,random,json,requests
+import discord,random,json,requests,praw
 from discord.ext import commands
 from discord_slash.utils.manage_commands import create_choice,create_option
 from discord_slash import cog_ext
@@ -49,7 +49,15 @@ class funcmds(commands.Cog):
     @commands.command(aliases=['t'])
     async def truth(self,ctx):
       await ctx.send("")
-
+    @commands.command(aliases=['m'])
+    async def meme(self,ctx):
+      memesubreddits = ["meme","memes","dankmemes"]
+      reddit = praw.Reddit()
+      meme = reddit.subreddit(random.choice(memesubreddits)).random()
+      embed=discord.Embed(title=meme.title)
+      embed.set_footer(text=meme.author)
+      embed.set_image(url=meme.url)
+      await ctx.send(embed=embed)
 
     @commands.command(aliases=['g'])
     async def gif(self,ctx,category=None,person : discord.Member=None):
@@ -87,7 +95,7 @@ class funcmds(commands.Cog):
       elif category == "help":
         ishelp = True
       else:
-        prefix = "well "
+        prefix = "well" + " "
         suffix = "thats a unknown category, heres a cat instead!"
         apiurl = "https://api.thecatapi.com/v1/images/search"
       if ishelp == False:
