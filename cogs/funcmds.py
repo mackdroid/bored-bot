@@ -1,4 +1,4 @@
-import discord,random,json,requests
+import discord,random,json,requests,praw
 from discord.ext import commands
 from discord_slash.utils.manage_commands import create_choice,create_option
 from discord_slash import cog_ext
@@ -49,7 +49,13 @@ class funcmds(commands.Cog):
     @commands.command(aliases=['t'])
     async def truth(self,ctx):
       await ctx.send("")
-
+    @commands.command(aliases=['m'])
+    async def meme(self,ctx):
+      meme = json.loads(requests.get("https://meme-api.herokuapp.com/gimme").text)    
+      embed=discord.Embed(title=meme["title"])
+      embed.set_footer(text="u/" + meme["author"] + " in r/" + meme["subreddit"])
+      embed.set_image(url=meme["url"])
+      await ctx.send(embed=embed)
 
     @commands.command(aliases=['g'])
     async def gif(self,ctx,category=None,person : discord.Member=None):
@@ -81,13 +87,16 @@ class funcmds(commands.Cog):
       elif category == "neko" or category == "cat":
         suffix = f"'s {category}! 🐈"
         apiurl = "https://api.thecatapi.com/v1/images/search"
+      elif category == "waifu":
+        suffix = "heres yer waifu"
+        apiurl = "https://api.waifu.pics/sfw/" + category
       elif category == "dog":
         suffix = random.choice([f"'s {category}! 🐶","doggo!! 🐶"])
         apiurl = "https://api.thedogapi.com/v1/images/search"
       elif category == "help":
         ishelp = True
       else:
-        prefix = "well "
+        prefix = "well" + " "
         suffix = "thats a unknown category, heres a cat instead!"
         apiurl = "https://api.thecatapi.com/v1/images/search"
       if ishelp == False:
@@ -101,5 +110,5 @@ class funcmds(commands.Cog):
         embed.set_image(url=url)
       else:
         embed=discord.Embed(title="Usage", description=f"{dpfx}g/gif [subcategory] [person]")
-        embed.add_field(name="Available Subcategories", value="kick, happy, wink, poke, dance, cringe, neko, cat, dog, kill, highfive, happy", inline=False)
+        embed.add_field(name="Available Subcategories", value="waifu, kick, happy, wink, poke, dance, cringe, neko, cat, dog, kill, highfive, happy", inline=False)
       await ctx.send(embed=embed)
