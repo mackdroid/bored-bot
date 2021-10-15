@@ -1,4 +1,4 @@
-import discord,random,json,requests,praw
+import discord,random,json,requests
 from discord.ext import commands
 from discord_slash.utils.manage_commands import create_choice,create_option
 from discord_slash import cog_ext

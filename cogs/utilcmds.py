@@ -70,6 +70,7 @@ class utils(commands.Cog):
         name="mute",
         description="Banish a person into the shadow realm.",
         permissions=permissions,
+        guild_ids=[guildID],
         options=[
             create_option(
                 name="member",
@@ -169,6 +170,7 @@ class utils(commands.Cog):
         name="unmute",
         description="unmute a person manually",
         permissions=permissions,
+        guild_ids=[guildID],
         options=[
             create_option(
                 name="member",
