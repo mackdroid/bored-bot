@@ -1,9 +1,10 @@
 from discord.ext import commands
 from discord import FFmpegOpusAudio
+from youtube_dl import YoutubeDL
 # from settings import vardb
 import requests,json,re,html,youtube_dl,discord,asyncio
 queue = {}
-youtube_dl.utils.bug_reports_message = lambda: '' # supress errors
+#youtube_dl.utils.bug_reports_message = lambda: '' # supress errors
 ytdlOpts = {
     'format': 'bestaudio/best',
     'noplaylist': True,
@@ -19,30 +20,31 @@ class music(commands.Cog):
         self.client = client
         queue = {}
     def arg_handler(self,query):
-        if 'https://open.spotify.com/track/' in query:
-            src = "spot"
-            response = requests.get(query)
-            filter = re.search("Spotify.Entity.*};",response.text).group(0)[17:-1]
-            spotinfo = json.loads(filter)
-            song_title = html.unescape(spotinfo["album"]["name"])
-            song_artist = html.unescape(spotinfo['album']['artists'][0]['name'])
-            searchstr = (song_title + " " + song_artist)
-            ytdlData = ytdl.extract_info(f"ytsearch:{searchstr}", download=False)
-            url = ytdlData['url']
-            ret = [url,src,song_title,song_artist]
-        elif('https://youtu.be' not in query) or ('https://youtube.com' not in query):
-            src = "yts"
-            ytdlData = ytdl.extract_info(f"ytsearch:{query}", download=False)
-            title = ytdlData['title']
-            url = ytdlData['url']
-            ret = [url,src,title]
-        else:
-            src = "yts"
-            ytdlData = ytdl.extract_info(query, download=False)
-            title = ytdlData['title']
-            url = ytdlData['url']
-            ret = [url,src,title]
-        return ret
+        with YoutubeDL(ytdlOpts) as ytdl:
+            if 'https://open.spotify.com/track/' in query:
+                src = "spot"
+                response = requests.get(query)
+                filter = re.search("Spotify.Entity.*};",response.text).group(0)[17:-1]
+                spotinfo = json.loads(filter)
+                song_title = html.unescape(spotinfo["album"]["name"])
+                song_artist = html.unescape(spotinfo['album']['artists'][0]['name'])
+                searchstr = (song_title + " " + song_artist)
+                ytdlData = ytdl.extract_info(f"ytsearch:{searchstr}", download=False)
+                url = ytdlData['url']
+                ret = [url,src,song_title,song_artist]
+            elif('https://youtu.be' not in query) or ('https://youtube.com' not in query):
+                src = "yts"
+                ytdlData = ytdl.extract_info(f"ytsearch:{query}", download=False)
+                title = ytdlData['title']
+                url = ytdlData['url']
+                ret = [url,src,title]
+            else:
+                src = "yts"
+                ytdlData = ytdl.extract_info(query, download=False)
+                title = ytdlData['title']
+                url = ytdlData['url']
+                ret = [url,src,title]
+            return ret
 
     @commands.command(aliases=['p'])
     async def play(self,ctx,*arg): 
