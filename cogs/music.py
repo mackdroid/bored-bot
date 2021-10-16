@@ -50,8 +50,7 @@ class music(commands.Cog):
         return ret
 
     @commands.command(aliases=['p'])
-    async def play(self,ctx,*arg):
-        
+    async def play(self,ctx,*arg): 
         if arg == None:
             arg = "Never gonna give you up"
         voice_channel = ctx.author.voice.channel
@@ -80,6 +79,14 @@ class music(commands.Cog):
         elif voice.channel != voice_channel:
             voice.move_to(voice_channel)
         await ctx.send("joined vc")
+        
+    @commands.command(aliases=['d','disc','leave','fuckoff'])
+    async def disconnect(self,ctx):
+        voice = ctx.channel.guild.voice_client
+        if voice is None:
+            ctx.send("not in vc")
+        await voice.disconnect()
+
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
         if len(self.bot.get_guild(id).voice_client.channel.members) < 1:
