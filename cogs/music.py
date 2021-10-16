@@ -1,16 +1,11 @@
-from json.decoder import JSONDecoder
-import discord
 from discord.ext import commands
-from discord import FFmpegOpusAudio, voice_client
+from discord import FFmpegOpusAudio
 # from settings import vardb
-# from discord_slash import SlashContext,cog_ext
-import requests,json,re,html,youtube_dl
+import requests,json,re,html,youtube_dl,discord,asyncio
 queue = {}
 youtube_dl.utils.bug_reports_message = lambda: '' # supress errors
 ytdlOpts = {
     'format': 'bestaudio/best',
-    'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
-    'restrictfilenames': True,
     'noplaylist': True,
     'nocheckcertificate': True,
     'ignoreerrors': False,
@@ -38,19 +33,19 @@ class music(commands.Cog):
             song_artist = html.unescape(spotinfo['album']['artists'][0]['name'])
             searchstr = (song_title + " " + song_artist)
             ytdlData = ytdl.extract_info(f"ytsearch:{searchstr}", download=False)
-            url = ytdlData['entries'][0]['formats'][1]['url']
+            url = ytdlData['url']
             ret = [url,src,song_title,song_artist]
         elif('https://youtu.be' not in query) or ('https://youtube.com' not in query):
             src = "yts"
             ytdlData = ytdl.extract_info(f"ytsearch:{query}", download=False)
-            title = ytdlData['entries'][0]['title']
-            url = ytdlData['entries'][0]['formats'][1]['url']
+            title = ytdlData['title']
+            url = ytdlData['url']
             ret = [url,src,title]
         else:
             src = "yts"
             ytdlData = ytdl.extract_info(query, download=False)
-            title = ytdlData
-            url = ytdlData['entries'][0]['formats'][1]['url']
+            title = ytdlData['title']
+            url = ytdlData['url']
             ret = [url,src,title]
         return ret
 
@@ -65,20 +60,16 @@ class music(commands.Cog):
             voice = await voice_channel.connect()
         elif voice.channel != voice_channel:
             voice.move_to(voice_channel)
-        if not voice.is_playing():
             source = self.arg_handler(arg)
             player = FFmpegOpusAudio(source[0], **ffmpegOpts)
             await ctx.send("playing "+ source[2])
             voice.play(player)
             voice.is_playing()
-        else:
-            await ctx.send("Already playing song")
-            return
-
 
     @commands.command(aliases=['s','stop'])
     async def skip(self,ctx):
         discord.utils.get(self.client.voice_clients, guild=ctx.guild).stop()
+        await ctx.send("stopped")
 
     @commands.command(aliases=['j','connect'])
     async def join(self,ctx):
@@ -89,3 +80,9 @@ class music(commands.Cog):
         elif voice.channel != voice_channel:
             voice.move_to(voice_channel)
         await ctx.send("joined vc")
+    @commands.Cog.listener()
+    async def on_voice_state_update(self, member, before, after):
+        if len(self.bot.get_guild(id).voice_client.channel.members) < 1:
+            asyncio.sleep(180)
+            if len(self.bot.get_guild(id).voice_client.channel.members) < 1:
+                await self.bot.get_guild(id).voice_client.disconnect()
