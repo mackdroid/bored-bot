@@ -1,0 +1,11 @@
+discord
+youtube-dl
+schedule
+requests
+pynacl
+discord-py-slash-command
+json
+re
+html
+asyncio
+random

@@ -19,7 +19,9 @@ ytdlOpts = {
     'no_warnings': True,
     'default_search': 'auto',
 }
-
+ffmpegOpts = {
+    'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
+    'options': '-vn'}
 ytdl = youtube_dl.YoutubeDL(ytdlOpts)
 
 class music(commands.Cog):
@@ -63,10 +65,16 @@ class music(commands.Cog):
             voice = await voice_channel.connect()
         elif voice.channel != voice_channel:
             voice.move_to(voice_channel)
-        source = self.arg_handler(arg)
-        player = FFmpegOpusAudio(source[0])
-        await ctx.send("playing "+ source[2])
-        voice.play(player)
+        if not voice.is_playing():
+            source = self.arg_handler(arg)
+            player = FFmpegOpusAudio(source[0], **ffmpegOpts)
+            await ctx.send("playing "+ source[2])
+            voice.play(player)
+            voice.is_playing()
+        else:
+            await ctx.send("Already playing song")
+            return
+
 
     @commands.command(aliases=['s','stop'])
     async def skip(self,ctx):

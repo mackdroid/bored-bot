@@ -9,7 +9,8 @@ to setup the bot you need a `settings.py` which contains the token and other stu
 * `statusreact` emote to react after successfully changing status through status command.
 <details>
 <summary>sample settings.py</summary>
-```from discord_slash.model import SlashCommandPermissionType
+```
+from discord_slash.model import SlashCommandPermissionType
 from discord_slash.utils.manage_commands import create_permission
 vardb = {
     "status_react":  "👌",
@@ -25,7 +26,8 @@ permissions={
                     create_permission(1234567890, SlashCommandPermissionType.ROLE, True),
                     create_permission(1234567890, SlashCommandPermissionType.ROLE, False)
                   ]
-}```
+}
+```
 </details>
 
 and dont forget to install the requirements using `pip install -r requirements.txt`
