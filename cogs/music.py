@@ -79,7 +79,7 @@ class music(commands.Cog):
         elif voice.channel != voice_channel:
             voice.move_to(voice_channel)
         await ctx.send("joined vc")
-        
+
     @commands.command(aliases=['d','disc','leave','fuckoff'])
     async def disconnect(self,ctx):
         voice = ctx.channel.guild.voice_client
@@ -87,9 +87,9 @@ class music(commands.Cog):
             ctx.send("not in vc")
         await voice.disconnect()
 
-    @commands.Cog.listener()
-    async def on_voice_state_update(self, member, before, after):
-        if len(self.bot.get_guild(id).voice_client.channel.members) < 1:
-            asyncio.sleep(180)
-            if len(self.bot.get_guild(id).voice_client.channel.members) < 1:
-                await self.bot.get_guild(id).voice_client.disconnect()
+    # @commands.Cog.listener()
+    # async def on_voice_state_update(self, member, before, after):
+    #     if len(self.bot.get_guild(id).voice_client.channel.members) < 1:
+    #         asyncio.sleep(180)
+    #         if len(self.bot.get_guild(id).voice_client.channel.members) < 1:
+    #             await self.bot.get_guild(id).voice_client.disconnect()
