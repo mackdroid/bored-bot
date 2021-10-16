@@ -1,4 +1,5 @@
 from json.decoder import JSONDecoder
+import discord
 from discord.ext import commands
 from discord import FFmpegOpusAudio, voice_client
 # from settings import vardb
@@ -24,6 +25,7 @@ ytdl = youtube_dl.YoutubeDL(ytdlOpts)
 class music(commands.Cog):
     def __init__(self, client):
         self.client = client
+        queue = {}
     def arg_handler(self,query):
         if 'https://open.spotify.com/track/' in query:
             src = "spot"
@@ -35,7 +37,7 @@ class music(commands.Cog):
             searchstr = (song_title + " " + song_artist)
             ytdlData = ytdl.extract_info(f"ytsearch:{searchstr}", download=False)
             url = ytdlData['entries'][0]['formats'][1]['url']
-            ret = [url,src,song_artist,song_title]
+            ret = [url,src,song_title,song_artist]
         elif('https://youtu.be' not in query) or ('https://youtube.com' not in query):
             src = "yts"
             ytdlData = ytdl.extract_info(f"ytsearch:{query}", download=False)
@@ -51,18 +53,25 @@ class music(commands.Cog):
         return ret
 
     @commands.command(aliases=['p'])
-    async def play(self,ctx,arg="Never gonna give you up"):
+    async def play(self,ctx,*arg):
+        
+        if arg == None:
+            arg = "Never gonna give you up"
         voice_channel = ctx.author.voice.channel
         voice = ctx.channel.guild.voice_client
         if voice is None:
             voice = await voice_channel.connect()
         elif voice.channel != voice_channel:
             voice.move_to(voice_channel)
-        print(arg)
         source = self.arg_handler(arg)
         player = FFmpegOpusAudio(source[0])
         await ctx.send("playing "+ source[2])
         voice.play(player)
+
+    @commands.command(aliases=['s','stop'])
+    async def skip(self,ctx):
+        discord.utils.get(self.client.voice_clients, guild=ctx.guild).stop()
+
     @commands.command(aliases=['j','connect'])
     async def join(self,ctx):
         voice_channel = ctx.author.voice.channel
