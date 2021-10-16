@@ -29,19 +29,19 @@ class music(commands.Cog):
                 song_artist = html.unescape(spotinfo['album']['artists'][0]['name'])
                 searchstr = (song_title + " " + song_artist)
                 ytdlData = ytdl.extract_info(f"ytsearch:{searchstr}", download=False)
-                url = ytdlData['url']
+                url = ytdlData['entries'][0]['formats'][1]['url']
                 ret = [url,src,song_title,song_artist]
             elif('https://youtu.be' not in query) or ('https://youtube.com' not in query):
                 src = "yts"
                 ytdlData = ytdl.extract_info(f"ytsearch:{query}", download=False)
-                title = ytdlData['title']
-                url = ytdlData['url']
+                title = ytdlData['entries'][0]['title']
+                url = ytdlData['entries'][0]['formats'][1]['url']
                 ret = [url,src,title]
             else:
                 src = "yts"
                 ytdlData = ytdl.extract_info(query, download=False)
-                title = ytdlData['title']
-                url = ytdlData['url']
+                title = ytdlData['entries'][0]['title']
+                url = ytdlData['entries'][0]['formats'][1]['url']
                 ret = [url,src,title]
             return ret
 
