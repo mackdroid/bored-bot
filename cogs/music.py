@@ -17,6 +17,7 @@ ffmpegOpts = {
 class music(commands.Cog):
     def __init__(self, client):
         self.client = client
+
     def arg_handler(self,query):
         with YoutubeDL(ytdlOpts) as ytdl:
             if 'https://open.spotify.com/track/' in query:
@@ -54,7 +55,7 @@ class music(commands.Cog):
             voice = await voice_channel.connect()
         elif voice.channel != voice_channel:
             voice.move_to(voice_channel)
-            source = self.arg_handler(arg)
+        source = self.arg_handler(arg)
         player = FFmpegOpusAudio(source[0], **ffmpegOpts)
         await ctx.send("playing "+ source[2])
         voice.play(player)
