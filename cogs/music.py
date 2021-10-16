@@ -13,12 +13,10 @@ ytdlOpts = {
 ffmpegOpts = {
     'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
     'options': '-vn'}
-ytdl = youtube_dl.YoutubeDL(ytdlOpts)
 
 class music(commands.Cog):
     def __init__(self, client):
         self.client = client
-        queue = {}
     def arg_handler(self,query):
         with YoutubeDL(ytdlOpts) as ytdl:
             if 'https://open.spotify.com/track/' in query:
@@ -57,10 +55,10 @@ class music(commands.Cog):
         elif voice.channel != voice_channel:
             voice.move_to(voice_channel)
             source = self.arg_handler(arg)
-            player = FFmpegOpusAudio(source[0], **ffmpegOpts)
-            await ctx.send("playing "+ source[2])
-            voice.play(player)
-            voice.is_playing()
+        player = FFmpegOpusAudio(source[0], **ffmpegOpts)
+        await ctx.send("playing "+ source[2])
+        voice.play(player)
+        voice.is_playing()
 
     @commands.command(aliases=['s','stop'])
     async def skip(self,ctx):
