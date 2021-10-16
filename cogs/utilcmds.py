@@ -1,6 +1,6 @@
 import discord,asyncio
 from discord_slash.utils.manage_commands import create_choice,create_option
-from discord_slash import SlashContext,cog_ext
+from discord_slash import cog_ext
 
 global vardb,guildID,permissions
 from settings import *
