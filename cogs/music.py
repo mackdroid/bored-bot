@@ -4,7 +4,7 @@ from youtube_dl import YoutubeDL
 # from settings import vardb
 import requests,json,re,html,youtube_dl,discord,asyncio
 queue = {}
-#youtube_dl.utils.bug_reports_message = lambda: '' # supress errors
+youtube_dl.utils.bug_reports_message = lambda: '' # supress errors
 ytdlOpts = {
     'format': 'bestaudio/best',
     'noplaylist': True,
@@ -46,23 +46,29 @@ class music(commands.Cog):
             return ret
 
     @commands.command(aliases=['p'])
-    async def play(self,ctx,*arg): 
+    async def play(self,ctx,*arg):
         if arg == None:
-            arg = "Never gonna give you up"
-        voice_channel = ctx.author.voice.channel
+            arg = "https://youtu.be/dQw4w9WgXcQ"
+        authorChannel = ctx.author.voice.channel
         voice = ctx.channel.guild.voice_client
+        if authorChannel is None:
+            ctx.send("not in vc")
         if voice is None:
-            voice = await voice_channel.connect()
-        elif voice.channel != voice_channel:
-            voice.move_to(voice_channel)
-        source = self.arg_handler(arg)
-        player = FFmpegOpusAudio(source[0], **ffmpegOpts)
-        await ctx.send("playing "+ source[2])
-        voice.play(player)
-        voice.is_playing()
+            voice = await authorChannel.connect()
+        elif voice.channel != authorChannel:
+            voice.move_to(authorChannel)
+        if not ctx.voice_state.is_playing():
+            source = self.arg_handler(arg)
+            player = FFmpegOpusAudio(source[0], **ffmpegOpts)
+            await ctx.send("playing "+ source[2])
+            voice.play(player)
+            voice.is_playing()
+        else:
+            await ctx.send("Already playing song")
+            return
 
-    @commands.command(aliases=['s','stop'])
-    async def skip(self,ctx):
+    @commands.command(aliases=['s','clear'])
+    async def stop(self,ctx):
         discord.utils.get(self.client.voice_clients, guild=ctx.guild).stop()
         await ctx.send("stopped")
 
