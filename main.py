@@ -12,7 +12,6 @@ cl = []
 client = commands.Bot(command_prefix=vardb["prefix"], intents=discord.Intents.all())
 slash = SlashCommand(client, sync_commands=True)
 client.add_cog(music(client))
-client.load_extension("dismusic")
 client.add_cog(utils(client,cl=cl))
 client.add_cog(teams(client,cl=cl))
 client.add_cog(funcmds(client))

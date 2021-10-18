@@ -46,7 +46,7 @@ class music(commands.Cog):
             return ret
 
     @commands.command(aliases=['p'])
-    async def play(self,ctx,*arg):
+    async def play(self,ctx: commands.Context,*arg):
         if arg == None:
             arg = "https://youtu.be/dQw4w9WgXcQ"
         authorChannel = ctx.author.voice.channel
