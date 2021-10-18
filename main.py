@@ -8,7 +8,6 @@ from cogs.utilcmds import utils
 from cogs.funcmds import funcmds
 from cogs.teams import teams
 from settings import vardb
-cl = []
 client = commands.Bot(command_prefix=vardb["prefix"], intents=discord.Intents.all())
 slash = SlashCommand(client, sync_commands=True)
 client.add_cog(music(client))

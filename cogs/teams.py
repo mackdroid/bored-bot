@@ -1,5 +1,6 @@
 from discord.ext import commands
 from settings import vardb
+global cl
 import schedule
 from discord import Webhook, RequestsWebhookAdapter
 from functions import retclasslinks
@@ -8,7 +9,7 @@ from discord_slash import SlashContext,cog_ext
 class teams(commands.Cog):
     def __init__(self, client,cl):
         self.client = client
-        self.cl = cl
+        cl = [] 
         # Daily Reset
         def daily_reset():
             cl.clear()
