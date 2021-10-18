@@ -52,7 +52,7 @@ class music(commands.Cog):
         authorChannel = ctx.author.voice.channel
         voice = ctx.channel.guild.voice_client
         if authorChannel is None:
-            ctx.send("not in vc")
+            ctx.send("You must be in a vc to use this")
         if voice is None:
             voice = await authorChannel.connect()
         elif voice.channel != authorChannel:
@@ -64,29 +64,34 @@ class music(commands.Cog):
             voice.play(player)
             voice.is_playing()
         else:
-            await ctx.send("Already playing song")
+            await ctx.send("Already playing song, Queue not implemented yet am lazy")
             return
 
     @commands.command(aliases=['s','clear'])
     async def stop(self,ctx):
         discord.utils.get(self.client.voice_clients, guild=ctx.guild).stop()
-        await ctx.send("stopped")
+        await ctx.send("Stopped")
 
     @commands.command(aliases=['j','connect'])
     async def join(self,ctx):
-        voice_channel = ctx.author.voice.channel
+        authorChannel = ctx.author.voice.channel
         voice = ctx.channel.guild.voice_client
+        if authorChannel is None:
+            ctx.send("You must be in a vc to use this")
         if voice is None:
-            voice = await voice_channel.connect()
-        elif voice.channel != voice_channel:
-            voice.move_to(voice_channel)
-        await ctx.send("joined vc")
+            voice = await authorChannel.connect()
+        elif voice.channel != authorChannel:
+            voice.move_to(authorChannel)
+        await ctx.send("Joined your voice channel")
 
     @commands.command(aliases=['d','disc','leave','fuckoff'])
     async def disconnect(self,ctx):
+        authorChannel = ctx.author.voice.channel
         voice = ctx.channel.guild.voice_client
+        if authorChannel is None:
+            ctx.send("You must be in a vc to use this")
         if voice is None:
-            ctx.send("not in vc")
+            ctx.send("Not in voice channel")
         await voice.disconnect()
 
     # @commands.Cog.listener()
