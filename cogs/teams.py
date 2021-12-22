@@ -1,28 +1,35 @@
 from discord.ext import commands
 from settings import vardb
 global cl
-import schedule
+cl = []
+import schedule,time,threading
 from discord import Webhook, RequestsWebhookAdapter
 from functions import retclasslinks
 from discord_slash import SlashContext,cog_ext
+# daemon thinge
+def schedulerd():   
+    while True:
+        schedule.run_pending()
+        time.sleep(60) # wait one minute
+thread = threading.Thread(target=schedulerd)
+thread.daemon = True # Daemonize thread
+print("Started schedule daemon")
+
+# Daily Reset
+def daily_reset():
+    cl.clear()
+    print("Daily Reset Successful")
+    return
+schedule.every().day.at("14:00").do(daily_reset)
+# Post Daily links
+def daily_links():
+    webhook = Webhook.from_url(vardb["webhooklink"], adapter=RequestsWebhookAdapter())
+    webhook.send(embeds=[retclasslinks("Time for class","Heres the Links ↓",cl)])     
+    print("Sent daily links")
+    return
+schedule.every().day.at("12:00").do(daily_links)
 
 class teams(commands.Cog):
-    def __init__(self, client,cl):
-        self.client = client
-        cl = [] 
-        # Daily Reset
-        def daily_reset():
-            cl.clear()
-            print("Daily Reset Successful")
-            return
-        schedule.every().day.at("14:00").do(daily_reset)
-        # Post Daily links
-        def daily_links():
-            webhook = Webhook.from_url(vardb["webhooklink"], adapter=RequestsWebhookAdapter())
-            webhook.send(embeds=[retclasslinks("Time for class","Heres the Links ↓",cl)])     
-            print("Sent daily links")
-            return
-        schedule.every().day.at("12:00").do(daily_links)
     @cog_ext.cog_slash( # Command to retrive the class meeting links
         name="classlinks",
         description="Prints class meeting links!",

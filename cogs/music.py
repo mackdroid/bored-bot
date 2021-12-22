@@ -3,7 +3,7 @@ from discord import FFmpegOpusAudio
 from youtube_dl import YoutubeDL
 # from settings import vardb
 import requests,json,re,html,youtube_dl,discord,asyncio
-queue = {}
+songqueue = {}
 youtube_dl.utils.bug_reports_message = lambda: '' # supress errors
 ytdlOpts = {
     'format': 'bestaudio/best',
@@ -17,6 +17,16 @@ ffmpegOpts = {
 class music(commands.Cog):
     def __init__(self, client):
         self.client = client
+
+    def queue_handler(guildid,do,args):
+        if do == "add":
+            songqueue[guildid] = args
+        elif do == "del":
+            del songqueue[guildid]
+        elif do == "get":
+            return songqueue[guildid]
+        else:
+            return None     
 
     def arg_handler(self,query):
         with YoutubeDL(ytdlOpts) as ytdl:
@@ -45,7 +55,7 @@ class music(commands.Cog):
                 ret = [url,src,title]
             return ret
 
-    @commands.command(aliases=['p'])
+    @commands.command(aliases=["p","add"])
     async def play(self,ctx: commands.Context,*arg):
         if arg == None:
             arg = "https://youtu.be/dQw4w9WgXcQ"
@@ -64,7 +74,8 @@ class music(commands.Cog):
             voice.play(player)
             voice.is_playing()
         else:
-            await ctx.send("Already playing song, Queue not implemented yet am lazy")
+            await ctx.send("Already playing song, Added to queue")
+
             return
 
     @commands.command(aliases=['s','clear'])
@@ -94,9 +105,9 @@ class music(commands.Cog):
             ctx.send("Not in voice channel")
         await voice.disconnect()
 
-    # @commands.Cog.listener()
-    # async def on_voice_state_update(self, member, before, after):
-    #     if len(self.bot.get_guild(id).voice_client.channel.members) < 1:
-    #         asyncio.sleep(180)
-    #         if len(self.bot.get_guild(id).voice_client.channel.members) < 1:
-    #             await self.bot.get_guild(id).voice_client.disconnect()
+    @commands.Cog.listener()
+    async def on_voice_state_update(self, member, before, after):
+        if len(self.bot.get_guild(id).voice_client.channel.members) < 1:
+            asyncio.sleep(180)
+            if len(self.bot.get_guild(id).voice_client.channel.members) < 1:
+                await self.bot.get_guild(id).voice_client.disconnect()
