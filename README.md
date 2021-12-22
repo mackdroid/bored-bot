@@ -10,7 +10,7 @@ to setup the bot you need a `settings.py` which contains the token and other stu
 <details>
 <summary>sample settings.py</summary>
 
-```
+```py
 vardb = {
     "status_react":  "👌",
     "webhooklink": "https://discord.com/api/webhooks/XXXXXXXXXXXXXXXX/XXXXXXXXXX",
