@@ -4,8 +4,6 @@ schedule
 requests
 pynacl
 discord-py-slash-command
-json
-re
-html
 asyncio
-random
+discord.py
+profanity-check

@@ -1,33 +1,23 @@
 #!/usr/bin/env python
-global status_react,cl
-import discord,atexit,schedule,time,threading
+import discord
 from discord.ext import commands
-from discord_slash import SlashCommand
-from cogs.music import *
-from cogs.utilcmds import utils
+from cogs.music import music
+from cogs.utils import utils
 from cogs.funcmds import funcmds
-from cogs.teams import teams
+# from cogs.teams import teams
 from settings import vardb
-cl = []
 client = commands.Bot(command_prefix=vardb["prefix"], intents=discord.Intents.all())
-slash = SlashCommand(client, sync_commands=True)
-client.add_cog(music(client))
-client.add_cog(utils(client,cl=cl))
-client.add_cog(teams(client,cl=cl))
+
+
+print("Loading Cogs")
 client.add_cog(funcmds(client))
+client.add_cog(music(client))
+client.add_cog(utils(client))
+# client.add_cog(teams())
+print("Cogs sucessfully loaded")
+
 @client.event
 async def on_ready():
     print(f'We have logged in as {client.user}')
-def exit():
-    print("\nExiting...")
-    return
-atexit.register(exit)
-# daemon thinge
-def schedulerd():
-    while True:
-     schedule.run_pending()
-     time.sleep(60) # wait one minute
-thread = threading.Thread(target=schedulerd)
-thread.daemon = True # Daemonize thread
-print("Started schedule daemon")
+
 client.run(vardb["disc_token"])

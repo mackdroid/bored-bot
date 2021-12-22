@@ -20,13 +20,6 @@ vardb = {
     "guildid": 1234567890,
     "scanchannelid": "1234567890",
 }
-# refer to https://discord-py-slash-command.readthedocs.io/en/latest/gettingstarted.html?highlight=permission#want-to-restrict-access-setup-permissions for this
-permissions={
-            vardb["guildid"]: [
-                    create_permission(1234567890, SlashCommandPermissionType.ROLE, True),
-                    create_permission(1234567890, SlashCommandPermissionType.ROLE, False)
-                  ]
-}
 ```
 </details>
 
