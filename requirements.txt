@@ -6,4 +6,4 @@ pynacl
 discord-py-slash-command
 asyncio
 discord.py
-profanity-check
+alt-profanity-check
