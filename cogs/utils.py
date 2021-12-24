@@ -1,4 +1,5 @@
 import discord
+from discord.opus import DecoderStruct
 from discord_slash.utils.manage_commands import create_choice,create_option
 from discord_slash import cog_ext
 from profanity_check import predict_prob
@@ -11,7 +12,28 @@ from discord.ext import commands
 class utils(commands.Cog):
     def __init__(self, client):
         self.client = client
-        
+    
+    @commands.command(pass_context=True)
+    @commands.has_permissions(administrator=True)
+    async def slash_purge(self, ctx, limit:int):
+        await ctx.channel.purge(limit=limit)
+        await ctx.send('Cleared by {}'.format(ctx.author.mention),delete_after=3)
+
+    @cog_ext.cog_slash(
+        name="purge",
+        description="Purge chat content",
+        options=[
+            create_option(
+                name="messages",
+                description="Type the number of messages to deleted",
+                required=True,
+                option_type=4
+            )
+        ]
+    )
+    async def slash_purge(self,ctx,limit:int):
+        ctx.invoke(self.client.get_command('purge'), limit=limit)
+
     @cog_ext.cog_slash( # Status
         name="status",
         description="Set bot status!",

@@ -1,5 +1,5 @@
 from discord.ext import commands
-from discord import FFmpegOpusAudio
+from discord import FFmpegOpusAudio,VoiceClient
 from youtube_dl import YoutubeDL
 # from settings import vardb
 import requests,json,re,html,youtube_dl,discord,asyncio
@@ -18,13 +18,20 @@ class music(commands.Cog):
     def __init__(self, client):
         self.client = client
 
-    def queue_handler(guildid,do,args):
-        if do == "add":
-            songqueue[guildid] = args
-        elif do == "del":
-            del songqueue[guildid]
-        elif do == "get":
-            return songqueue[guildid]
+    def queue_handler(guildid,type,song): # Handles queue, song must be a list with [0] as name and [1] as artist
+        if type == "add": #Add
+            songqueue[guildid][0].append(song)
+        elif type == "del" and type(song) is int or None: # delete from queue
+            if song == None:
+                song = 1
+            del songqueue[guildid][0][song-1]
+        elif type == "nxt": # return next in queue or return nothing if queue empty, also remove song from queue after returning song
+            if songqueue[guildid] == None or len(songqueue[guildid][0]) == 0:
+                return
+            else:
+                song = songqueue[guildid][0][0]
+                del songqueue[guildid][0][0]
+                return song
         else:
             return None     
 
@@ -64,17 +71,18 @@ class music(commands.Cog):
         if authorChannel is None:
             ctx.send("You must be in a vc to use this")
         if voice is None:
-            voice = await authorChannel.connect()
+            await authorChannel.connect()
+            voice = ctx.channel.guild.voice_client
         elif voice.channel != authorChannel:
             voice.move_to(authorChannel)
-        if not ctx.voice_state.is_playing():
+        if not voice.is_playing():
             source = self.arg_handler(arg)
             player = FFmpegOpusAudio(source[0], **ffmpegOpts)
             await ctx.send("playing "+ source[2])
             voice.play(player)
             voice.is_playing()
         else:
-            await ctx.send("Already playing song, Added to queue")
+            await ctx.send("Already playing song, Adding to queue")
 
             return
 
