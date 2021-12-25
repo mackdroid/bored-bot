@@ -15,7 +15,7 @@ class utils(commands.Cog):
     
     @commands.command(pass_context=True)
     @commands.has_permissions(administrator=True)
-    async def slash_purge(self, ctx, limit:int):
+    async def purge(self, ctx, limit:int):
         await ctx.channel.purge(limit=limit)
         await ctx.send('Cleared by {}'.format(ctx.author.mention),delete_after=3)
 
