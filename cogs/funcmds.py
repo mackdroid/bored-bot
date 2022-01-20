@@ -39,16 +39,6 @@ class funcmds(commands.Cog):
             )
         await interaction.edit_original_message(embeds=[embed])
 
-    @nextcord.slash_command(name="ping", # Ping command
-    description="Ping pong and view latency",
-    )
-    async def ping(self,interaction: Interaction):
-        embed = nextcord.Embed(title="Pong! 🏓")
-        await interaction.response.send_message(embed=embed) # reply with embed
-        ping = round(self.client.latency*1000)
-        embed.set_footer(text=f"{ping} ms")
-        await interaction.edit_original_message(embed=embed) # edit embed with latency
-
     def get_meme(self): # Get a meme from reddit
       meme = json.loads(requests.get("https://meme-api.herokuapp.com/gimme").text) # GET meme from api
       embed = nextcord.Embed(title=meme["title"]) # create embed

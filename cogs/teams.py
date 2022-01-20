@@ -34,6 +34,7 @@ class teams(commands.Cog):
     @nextcord.slash_command( # Command to retrive the class meeting links
         name="classlinks",
         description="Prints class meeting links!",
+        guild_ids=vardb["teams"]["TeamsWhitelistIds"]
         )
     async def links(self,interaction: Interaction):
         from functions import retclasslinks
@@ -49,7 +50,7 @@ class teams(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
             now = datetime.now()
-            seconds_to_event = (timedelta(hours=24) - (now - now.replace(hour=7, minute=50, second=0, microsecond=0))).total_seconds() % (24 * 3600)
+            seconds_to_event = round((timedelta(hours=24) - (now - now.replace(hour=7, minute=50, second=0, microsecond=0))).total_seconds() % (24 * 3600))
             print("seconds to disaster ", seconds_to_event)
             await asyncio.sleep(seconds_to_event) # Calculate the time until the next 7:50am (when my online classes start) in seconds
             for channel in vardb["teams"]["ScanChIds"]:

@@ -71,6 +71,15 @@ class utils(commands.Cog):
                 await interaction.response.send_message("An error occured")
         else:
             return
+    @nextcord.slash_command(name="ping", # Ping command
+    description="Ping pong and view latency",
+    )
+    async def ping(self,interaction: Interaction):
+        embed = nextcord.Embed(title="Pong! 🏓")
+        await interaction.response.send_message(embed=embed) # reply with embed
+        ping = round(self.client.latency*1000)
+        embed.set_footer(text=f"{ping} ms")
+        await interaction.edit_original_message(embed=embed) # edit embed with latency
 
     @commands.Cog.listener()
     async def on_message(self, message):
