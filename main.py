@@ -13,7 +13,7 @@ client.add_cog(funcmds(client))
 client.add_cog(music(client))
 client.add_cog(utils(client))
 
-if teams in vardb.keys(): 
+if "teams" in vardb.keys(): 
     from cogs.teams import teams
     client.add_cog(teams(client))
 
