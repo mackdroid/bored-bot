@@ -1,5 +1,9 @@
+if __name__ == "__main__":
+    print("This is a cog, execute main.py!")
+    exit()
+import queue
 from discord.ext import commands
-from discord import FFmpegOpusAudio
+from discord import FFmpegOpusAudio,VoiceClient, guild
 from youtube_dl import YoutubeDL
 # from settings import vardb
 import requests,json,re,html,youtube_dl,discord,asyncio
@@ -18,30 +22,21 @@ class music(commands.Cog):
     def __init__(self, client):
         self.client = client
 
-    def queue_handler(guildid,do,args):
-        if do == "add":
-            songqueue[guildid] = args
-        elif do == "del":
-            del songqueue[guildid]
-        elif do == "get":
-            return songqueue[guildid]
-        else:
-            return None     
-
     def arg_handler(self,query):
         with YoutubeDL(ytdlOpts) as ytdl:
-            if 'https://open.spotify.com/track/' in query:
-                src = "spot"
-                response = requests.get(query)
-                filter = re.search("Spotify.Entity.*};",response.text).group(0)[17:-1]
-                spotinfo = json.loads(filter)
-                song_title = html.unescape(spotinfo["album"]["name"])
-                song_artist = html.unescape(spotinfo['album']['artists'][0]['name'])
-                searchstr = (song_title + " " + song_artist)
-                ytdlData = ytdl.extract_info(f"ytsearch:{searchstr}", download=False)
-                url = ytdlData['entries'][0]['formats'][1]['url']
-                ret = [url,src,song_title,song_artist]
-            elif('https://youtu.be' not in query) or ('https://youtube.com' not in query):
+            # if 'https://open.spotify.com/track/' in query:
+            #     src = "spot"
+            #     response = requests.get(query)
+            #     filter = re.search("Spotify.Entity.*};",response.text).group(0)[17:-1]
+            #     spotinfo = json.loads(filter)
+            #     song_title = html.unescape(spotinfo["album"]["name"])
+            #     song_artist = html.unescape(spotinfo['album']['artists'][0]['name'])
+            #     searchstr = (song_title + " " + song_artist)
+            #     ytdlData = ytdl.extract_info(f"ytsearch:{searchstr}", download=False)
+            #     url = ytdlData['entries'][0]['formats'][1]['url']
+            #     ret = [url,src,song_title,song_artist]
+            # elif('https://youtu.be' not in query) or ('https://youtube.com' not in query):
+            if('https://youtu.be' not in query) or ('https://youtube.com' not in query):
                 src = "yts"
                 ytdlData = ytdl.extract_info(f"ytsearch:{query}", download=False)
                 title = ytdlData['entries'][0]['title']
@@ -54,34 +49,87 @@ class music(commands.Cog):
                 url = ytdlData['entries'][0]['formats'][1]['url']
                 ret = [url,src,title]
             return ret
-
     @commands.command(aliases=["p","add"])
     async def play(self,ctx: commands.Context,*arg):
         if arg == None:
             arg = "https://youtu.be/dQw4w9WgXcQ"
         authorChannel = ctx.author.voice.channel
         voice = ctx.channel.guild.voice_client
+        guild_id=ctx.guild.id
         if authorChannel is None:
             ctx.send("You must be in a vc to use this")
         if voice is None:
-            voice = await authorChannel.connect()
+            await authorChannel.connect()
+            voice = ctx.channel.guild.voice_client
         elif voice.channel != authorChannel:
             voice.move_to(authorChannel)
-        if not ctx.voice_state.is_playing():
+        if guild_id not in songqueue.keys():
+            songqueue[guild_id] = []
+        if not voice.is_playing():
             source = self.arg_handler(arg)
             player = FFmpegOpusAudio(source[0], **ffmpegOpts)
             await ctx.send("playing "+ source[2])
-            voice.play(player)
+            await voice.play(player)
             voice.is_playing()
+            while True:
+                if len(songqueue[guild_id]) > 0:
+                    server_id=ctx.guild.id
+                    source = songqueue[server_id][0]
+                    player = FFmpegOpusAudio(source[0], **ffmpegOpts)
+                    songqueue[server_id].pop(0)
+                    await ctx.send("playing "+ source[2])
+                    await voice.play(player)
+                    voice.is_playing()
+                else:
+                    await ctx.send("Queue is empty")
+                break
         else:
-            await ctx.send("Already playing song, Added to queue")
-
+            await ctx.send("Already playing song, Adding to queue")
+            server_id=int(ctx.guild.id)
+            songqueue[server_id].append(self.arg_handler(arg))
             return
 
-    @commands.command(aliases=['s','clear'])
+    @commands.command(aliases=["s"])
+    async def skip(self,ctx):
+        authorChannel = ctx.author.voice.channel
+        voice = ctx.channel.guild.voice_client
+        guild_id=ctx.guild.id
+        if authorChannel is None:
+            ctx.send("You must be in a vc to use this")
+        if voice is None:
+            ctx.send("Bot not in a vc")
+        if guild_id not in songqueue.keys():
+            songqueue[guild_id] = []
+        if len(songqueue[guild_id]) > 0:
+            discord.utils.get(self.client.voice_clients, guild=ctx.guild).stop()
+            server_id=ctx.guild.id
+            source = songqueue[server_id][0]
+            player = FFmpegOpusAudio(source[0], **ffmpegOpts)
+            songqueue[server_id].pop(0)
+            await ctx.send("playing next in queue "+ source[2])
+            await voice.play(player)
+            voice.is_playing()
+        else:
+            await ctx.send("Queue is empty")
+            return
+
+    @commands.command(aliases=['dump'])
+    async def dump_queue(self,ctx):
+        await ctx.send(songqueue)
+
+    @commands.command(aliases=['q'])
+    async def queue(self,ctx):
+        embed = discord.Embed(title="Queue", description="Song queue")
+        for i in songqueue[ctx.guild.id]:
+            embed.add_field(name=i[2],inline=False)
+        await ctx.send(embed=embed)
+
+    @commands.command(aliases=['clear'])
     async def stop(self,ctx):
+        guild_id=ctx.guild.id
         discord.utils.get(self.client.voice_clients, guild=ctx.guild).stop()
-        await ctx.send("Stopped")
+        songqueue[guild_id].clear()
+        await ctx.send("Stopped And Cleared queue")
 
     @commands.command(aliases=['j','connect'])
     async def join(self,ctx):
@@ -107,7 +155,7 @@ class music(commands.Cog):
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
-        if len(self.bot.get_guild(id).voice_client.channel.members) < 1:
+        if len(self.client.get_guild(id).voice_client.channel.members) < 1:
             asyncio.sleep(180)
-            if len(self.bot.get_guild(id).voice_client.channel.members) < 1:
-                await self.bot.get_guild(id).voice_client.disconnect()
+            if len(self.client.get_guild(id).voice_client.channel.members) < 1:
+                await self.client.get_guild(id).voice_client.disconnect()

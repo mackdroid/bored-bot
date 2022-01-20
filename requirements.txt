@@ -1,9 +1,0 @@
-discord
-youtube-dl
-schedule
-requests
-pynacl
-discord-py-slash-command
-asyncio
-discord.py
-alt-profanity-check

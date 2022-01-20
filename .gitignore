@@ -1,3 +1,5 @@
 settings.py
-/venv
+.venv/
+.vscode/
 __pycache__/
+poetry.lock

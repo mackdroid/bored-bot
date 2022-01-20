@@ -12,12 +12,8 @@ to setup the bot you need a `settings.py` which contains the token and other stu
 
 ```py
 vardb = {
-    "status_react":  "👌",
-    "webhooklink": "https://discord.com/api/webhooks/XXXXXXXXXXXXXXXX/XXXXXXXXXX",
     "prefix": ".",
     "disc_token": "xxxxxxxxxxxxxxxxxxx",
-    "guildid": 1234567890,
-    "scanchannelid": "1234567890",
 }
 ```
 
