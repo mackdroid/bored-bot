@@ -30,7 +30,6 @@ def retclasslinks(title,desc,cl):
 class teams(commands.Cog):
     def __init__(self, client):
         self.client = client
-
     @nextcord.slash_command( # Command to retrive the class meeting links
         name="classlinks",
         description="Prints class meeting links!",

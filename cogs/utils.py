@@ -5,8 +5,12 @@ import re
 import nextcord
 from nextcord import Interaction, SlashOption
 from nextcord.ext import commands
+from numpy import var
 from profanity_check import predict_prob
 from settings import *
+
+if "ProfCheck" not in vardb.keys()
+    DisableProfCheck = True
 
 class utils(commands.Cog):
     def __init__(self, client):
@@ -85,14 +89,15 @@ class utils(commands.Cog):
     async def on_message(self, message):
         if message.author == self.client.user:
             return
-        if int(message.guild.id) in vardb["ProfCheckWhitelistIds"]:
-            msg_predict_prob=predict_prob([str(message.content)])[0]*100
-            # await message.channel.send("this message has a probability of " + str(msg_predict_prob)+ "% , containing profanity")
-            if int(msg_predict_prob) > 82 :
-                await message.delete()
-                channel = self.client.get_channel(vardb["ProfCheckLogCh"])
-                await channel.send(f"Message containing: ```{message.content}```Deleted in {message.channel.name} sent by {message.author.mention},\nPrediction percentage: {msg_predict_prob}")
-                return
+        if DisableProfCheck != True:
+            if int(message.guild.id) in vardb["ProfCheck"]["WhitelistIds"]:
+                msg_predict_prob=predict_prob([str(message.content)])[0]*100
+                # await message.channel.send("this message has a probability of " + str(msg_predict_prob)+ "% , containing profanity")
+                if int(msg_predict_prob) > 82 :
+                    await message.delete()
+                    channel = self.client.get_channel(vardb["ProfCheck"]["LogCh"])
+                    await channel.send(f"Message containing: ```{message.content}```Deleted in {message.channel.name} sent by {message.author.mention},\nPrediction percentage: {msg_predict_prob}")
+                    return
 
 
 
