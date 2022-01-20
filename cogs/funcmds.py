@@ -1,73 +1,80 @@
-import discord,random,json,requests
-from discord.ext import commands
-from discord_slash.utils.manage_commands import create_choice,create_option
-from discord_slash import cog_ext
+if __name__ == "__main__":
+    print("This is a cog, execute main.py!")
+    exit()
+import nextcord,random,json,requests
+from nextcord import Interaction, SlashOption
+from nextcord.ext import commands
 from settings import vardb
 dpfx = vardb["prefix"]
 
 class funcmds(commands.Cog):
     def __init__(self, client):
         self.client = client
-    @cog_ext.cog_slash(name="toss", # Toss a coin 
+    @nextcord.slash_command(name="toss", # Toss a coin
              description="Toss a coin, accepts Heads and Tails as input.",
-             options=[
-               create_option(
-                 name="side",
-                 description="Choose a side of the coin.",
-                 option_type=3,
-                 required=True,
-                 choices=[
-                  create_choice(
-                    name="Heads",
-                    value="heads"
-                  ),
-                  create_choice(
-                    name="Tails",
-                    value="tails"
-                  )
-                ]
-               )
-             ])
-    async def flip(self, ctx,side):
-        coin = ['heads','tails']
-        embed = discord.Embed(title=f"The 🪙 flipped to {random.choice(coin)}!" ) # choose random choice and embed and reply
+             )
+    async def flip(self,
+     interaction: Interaction,
+     side=SlashOption(
+     name="side",
+     description="Choose a side of the coin.",
+     required=True,
+     choices={"Heads":"Heads","Tails":"Tails"}),
+     reason=SlashOption(
+      name="reason",
+      description="Reason for tossing the coin.",
+      required=False)
+    ):
+        embed = nextcord.Embed(title="Tossing a coin...")
+        await interaction.response.send_message(embeds=[embed])
+        coin = ["Heads","Tails"]
+        if reason is None: # check for reason if none is given set suffix to empty string
+          suffix = ""
+        else:
+          suffix = " for {}".format(reason)
+        embed = nextcord.Embed(title=f"The 🪙 flipped to {random.choice(coin)}" + suffix + "!") # choose random choice and embed and reply
         embed.add_field(
             name="Your choice",
             value=f"{side}"
             )
-        await ctx.send(embeds=[embed])
+        await interaction.edit_original_message(embeds=[embed])
 
-    @cog_ext.cog_slash(name="ping", # Ping command
+    @nextcord.slash_command(name="ping", # Ping command
     description="Ping pong and view latency",
     )
-    async def ping(self,ctx):
-        ping = self.client.latency*1000
-        embed = discord.Embed(title="Pong! 🏓")
+    async def ping(self,interaction: Interaction):
+        embed = nextcord.Embed(title="Pong! 🏓")
+        await interaction.response.send_message(embed=embed) # reply with embed
+        ping = round(self.client.latency*1000)
         embed.set_footer(text=f"{ping} ms")
-        await ctx.send(embeds=[embed]) 
+        await interaction.edit_original_message(embed=embed) # edit embed with latency
 
-    @commands.command(aliases=['t'])
-    async def truth(self,ctx):
-      await ctx.send("")
-    @commands.command(aliases=['m'])
-    async def meme(self,ctx):
-      meme = json.loads(requests.get("https://meme-api.herokuapp.com/gimme").text)    
-      embed=discord.Embed(title=meme["title"])
-      embed.set_footer(text="u/" + meme["author"] + " in r/" + meme["subreddit"])
+    def get_meme(self): # Get a meme from reddit
+      meme = json.loads(requests.get("https://meme-api.herokuapp.com/gimme").text) # GET meme from api
+      embed = nextcord.Embed(title=meme["title"]) # create embed
+      embed.set_footer(text="u/" + meme["author"] + " - r/" + meme["subreddit"])
       embed.set_image(url=meme["url"])
-      await ctx.send(embed=embed)
+      return embed # return meme with embed containing meme
 
-    @commands.command(aliases=['g'])
-    async def gif(self,ctx,category=None,person : discord.Member=None):
+    @nextcord.slash_command(name="meme", # Meme slash comand
+    description="Get a random meme from reddit")
+    async def meme_slash(self,interaction: Interaction):
+      await interaction.response.send_message(embed=self.get_meme()) # send meme with embed
+
+    @commands.command(aliases=['m']) # Meme command
+    async def meme(self,ctx):
+      await ctx.send(embed=self.get_meme()) # send embed with the meme
+
+    def get_gif(self,category:None,person:None,author:str): # Get a gif from various gif sources
       categories = ["kick","happy","wink","poke","dance","cringe","neko","cat","dog","kill","highfive","happy"]
       prefix = ""
       ishelp = False
-      if person == None:
+      if person == None: # check for variable
         person = random.choice(["himself..?","themselves.."])
         noarg2 = True
       else:
         person = person.mention
-      if category == "kick" or category == "kill" or category == "highfive":
+      if category == "kick" or category == "kill" or category == "highfive": # check for category
         suffix = category +f"s {person}!"
         apiurl = "https://api.waifu.pics/sfw/" + category
       elif category == "happy":
@@ -99,16 +106,37 @@ class funcmds(commands.Cog):
         prefix = "well" + " "
         suffix = "thats a unknown category, heres a cat instead!"
         apiurl = "https://api.thecatapi.com/v1/images/search"
-      if ishelp == False:
+      if ishelp == False: # check if category is help, if yes get gif from the set apiurl
         if (apiurl.find('waifu') != -1):
           url = json.loads(requests.get(apiurl).text)["url"]
         else:
           url = json.loads(requests.get(apiurl).text)[0]["url"]
-        embed = discord.Embed(description=prefix + ctx.message.author.mention + " " + suffix) 
+        embed = nextcord.Embed(description=prefix + author + " " + suffix)
         footer = random.choice([f"use `{dpfx}gif help` for more more categories","UwU","owo"])
         embed.set_footer(text=footer)
         embed.set_image(url=url)
-      else:
-        embed=discord.Embed(title="Usage", description=f"{dpfx}g/gif [subcategory] [person]")
+      else: # if help set embed to help menu
+        embed=nextcord.Embed(title="Usage", description=f"{dpfx}g/gif [subcategory] [person]")
         embed.add_field(name="Available Subcategories", value="waifu, kick, happy, wink, poke, dance, cringe, neko, cat, dog, kill, highfive, happy", inline=False)
-      await ctx.send(embed=embed)
+      return embed
+
+    @commands.command(aliases=['g'])
+    async def gif(self,ctx,category=None,person : nextcord.Member=None):
+      try:
+        await ctx.send(embed=self.get_gif(category,person,ctx.message.author.mention))
+      except:
+        await ctx.send("An error occured while trying to get a gif, please try again later.")
+
+    @nextcord.slash_command(name="gif", # Send a gif from random apis
+            description="Send a GIF from different categories")
+    async def gif_slash(self, interaction:Interaction,
+    category: str = SlashOption(
+        name="category",
+        choices={"waifu":"waifu","kick":"kick","happy":"happy","wink":"wink","poke":"poke","dance":"dance","cringe":"cringe","neko":"neko","cat":"cat","dog":"dog","kill":"kill","highfive":"highfive","happy":"happy","help":"help"},
+        description="Choose a category to get a gif from",
+    ),
+    person:nextcord.Member = SlashOption(
+      name="person",
+      required=False, 
+      description="Choose a person to send the GIF to.")):
+      await interaction.response.send_message(embed=self.get_gif(category,person,interaction.user.mention))

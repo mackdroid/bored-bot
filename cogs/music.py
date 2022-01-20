@@ -1,3 +1,6 @@
+if __name__ == "__main__":
+    print("This is a cog, execute main.py!")
+    exit()
 from discord.ext import commands
 from discord import FFmpegOpusAudio,VoiceClient
 from youtube_dl import YoutubeDL
@@ -83,7 +86,9 @@ class music(commands.Cog):
             voice.is_playing()
         else:
             await ctx.send("Already playing song, Adding to queue")
-
+            server_id=ctx.guild.id
+            songqueue[server_id][0].append(self.arg_handler(arg))
+            
             return
 
     @commands.command(aliases=['s','clear'])

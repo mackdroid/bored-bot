@@ -1,11 +1,12 @@
 { pkgs ? import <nixpkgs> {} }:
+pkgs.poetry2nix.mkPoetryApplication {
+  projectDir = ./.;
+}
 (pkgs.buildFHSUserEnv {
   name = "bored-bot-userenv";
   targetPkgs = pkgs: (with pkgs; [
-    python39
-    python39Packages.pip
-    python39Packages.virtualenv
 	fish
   ]);
+  extraBuildCommands = ''poetry install'';
   runScript = ''fish -C "source $(pwd)/venv/bin/activate.fish"'';
 }).env
