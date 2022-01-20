@@ -9,7 +9,7 @@ from numpy import var
 from profanity_check import predict_prob
 from settings import *
 
-if "ProfCheck" not in vardb.keys()
+if "ProfCheck" not in vardb.keys():
     DisableProfCheck = True
 
 class utils(commands.Cog):
