@@ -9,12 +9,11 @@ from numpy import var
 from profanity_check import predict_prob
 from settings import *
 
-if "ProfCheck" not in vardb.keys():
-    DisableProfCheck = True
-
 class utils(commands.Cog):
     def __init__(self, client):
         self.client = client
+        if "ProfCheck" not in vardb.keys():
+            DisableProfCheck = True
     
     @commands.command(pass_context=True)
     @commands.has_permissions(administrator=True)
@@ -89,7 +88,7 @@ class utils(commands.Cog):
     async def on_message(self, message):
         if message.author == self.client.user:
             return
-        if DisableProfCheck != True:
+        if self.DisableProfCheck != True:
             if int(message.guild.id) in vardb["ProfCheck"]["WhitelistIds"]:
                 msg_predict_prob=predict_prob([str(message.content)])[0]*100
                 # await message.channel.send("this message has a probability of " + str(msg_predict_prob)+ "% , containing profanity")
