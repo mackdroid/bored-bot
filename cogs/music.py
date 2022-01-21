@@ -123,7 +123,7 @@ class music(commands.Cog):
         embed = discord.Embed(title="Song Queue")
         for i in songqueue[guild_id]:
             id = songqueue[guild_id].index(i)
-            embed.add_field(name=str(id+1)+". "+i[2], value=f"`id {id}",inline=False)
+            embed.add_field(name=str(id+1)+". "+i[2], value=f"`id {id+1}`",inline=False)
         await ctx.send(embed=embed)
 
     @commands.command(aliases=['clear'])
