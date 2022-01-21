@@ -119,7 +119,7 @@ class music(commands.Cog):
 
     @commands.command(aliases=['q'])
     async def queue(self,ctx):
-        embed = discord.Embed(title="Queue", description="Song queue")
+        embed = discord.Embed(name="", value="Queue", description="Song queue")
         for i in songqueue[ctx.guild.id]:
             embed.add_field(name=i[2],inline=False)
         await ctx.send(embed=embed)
