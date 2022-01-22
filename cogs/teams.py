@@ -2,12 +2,14 @@ if __name__ == "__main__":
     print("This is a cog, execute main.py!")
     exit()
 # imports
-import nextcord
+import nextcord,json
 from nextcord import Interaction
 from async_timeout import asyncio
 from nextcord.ext import commands
-from settings import vardb
 from datetime import datetime, timedelta
+
+# load settings from settings.json
+vardb = json.load(open("settings.json"))
 
 # Setup cl var to be used to store the class links
 global cl
@@ -52,7 +54,7 @@ class teams(commands.Cog):
             seconds_to_event = round((timedelta(hours=24) - (now - now.replace(hour=7, minute=50, second=0, microsecond=0))).total_seconds() % (24 * 3600))
             print("seconds to disaster ", seconds_to_event)
             await asyncio.sleep(seconds_to_event) # Calculate the time until the next 7:50am (when my online classes start) in seconds
-            for channel in vardb["teams"]["ScanChIds"]:
+            for channel in vardb["teams"]["DailyPostlinkChIds"]:
                 await self.client.get_channel(channel).send(embeds=[retclasslinks("Time for class","Heres the Links ↓",cl)])
             await asyncio.sleep(18600)
             cl.clear() # clear the list containing class links

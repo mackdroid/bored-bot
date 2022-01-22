@@ -1,11 +1,9 @@
 if __name__ == "__main__":
     print("This is a cog, execute main.py!")
     exit()
-import queue
-from discord.ext import commands
-from discord import FFmpegOpusAudio,VoiceClient, guild
+from nextcord.ext import commands
+from nextcord import FFmpegOpusAudio,VoiceClient, guild
 from youtube_dl import YoutubeDL
-# from settings import vardb
 import requests,json,re,html,youtube_dl,discord,asyncio
 songqueue = {}
 youtube_dl.utils.bug_reports_message = lambda: '' # supress errors

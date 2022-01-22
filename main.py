@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-import nextcord
+import nextcord,json
 from nextcord.ext import commands
-from settings import vardb
-
 from cogs.funcmds import funcmds
 from cogs.music import music
 from cogs.utils import utils
+
+vardb = json.load(open("settings.json"))
 client = commands.Bot(command_prefix=vardb["prefix"], intents=nextcord.Intents.all())
 
 print("Loading Cogs")
