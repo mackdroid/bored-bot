@@ -4,7 +4,10 @@ if __name__ == "__main__":
 import nextcord,random,json,requests
 from nextcord import Interaction, SlashOption
 from nextcord.ext import commands
-from settings import vardb
+# import settings from settings.json
+vardb = json.load(open("settings.json"))
+
+# setup dpfx for easy access to prefix
 dpfx = vardb["prefix"]
 
 class funcmds(commands.Cog):
@@ -130,3 +133,10 @@ class funcmds(commands.Cog):
       required=False, 
       description="Choose a person to send the GIF to.")):
       await interaction.response.send_message(embed=self.get_gif(category,person,interaction.user.mention))
+
+    @commands.command(aliases=['av'])
+    async def avatar(self, ctx, *,  avamember : nextcord.Member=None):
+      embed = nextcord.Embed(title="Avatar of " + avamember.mention)
+      embed.set_image(url=avamember.avatar_url)
+      embed.set_author(name=ctx.name, icon_url=ctx.avatar_url)
+      await ctx.send(embed=embed)
