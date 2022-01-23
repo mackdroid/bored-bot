@@ -1,6 +1,7 @@
 if __name__ == "__main__":
     print("This is a cog, execute main.py!")
     exit()
+    
 # imports
 import nextcord,json
 from nextcord import Interaction
@@ -14,7 +15,7 @@ vardb = json.load(open("settings.json"))
 # Setup cl var to be used to store the class links
 global cl
 cl = []
-    
+
 # returns the classlinks in a embed
 def retclasslinks(title,desc,cl):
     classlinkembed = nextcord.Embed(title=title, description = desc)

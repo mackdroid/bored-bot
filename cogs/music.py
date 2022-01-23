@@ -1,17 +1,22 @@
 if __name__ == "__main__":
     print("This is a cog, execute main.py!")
     exit()
+# imports
 from nextcord.ext import commands
 from nextcord import FFmpegOpusAudio,VoiceClient, guild
 from youtube_dl import YoutubeDL
 import requests,json,re,html,youtube_dl,discord,asyncio
+# initialize queue
 songqueue = {}
+
 youtube_dl.utils.bug_reports_message = lambda: '' # supress errors
+# set up youtube_dl
 ytdlOpts = {
     'format': 'bestaudio/best',
     'noplaylist': True,
     'default_search': 'auto',
 }
+# set up ffmpeg options 
 ffmpegOpts = {
     'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
     'options': '-vn'}
@@ -22,7 +27,7 @@ class music(commands.Cog):
 
     def arg_handler(self,query):
         with YoutubeDL(ytdlOpts) as ytdl:
-            # if 'https://open.spotify.com/track/' in query:
+            # if 'https://open.spotify.com/track/' in query: # broken 
             #     src = "spot"
             #     response = requests.get(query)
             #     filter = re.search("Spotify.Entity.*};",response.text).group(0)[17:-1]
