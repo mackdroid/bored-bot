@@ -12,6 +12,7 @@ alt-profanity-check = "^1.0.2"
 asyncio = "^3.4.3"
 youtube_dl = "^2021.12.17"
 nextcord = "^2.0.0-alpha.6"
+scikit-learn = "~1.0.1"
 
 [tool.poetry.dev-dependencies]
 
