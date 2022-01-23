@@ -135,8 +135,9 @@ class funcmds(commands.Cog):
       await interaction.response.send_message(embed=self.get_gif(category,person,interaction.user.mention))
 
     @commands.command(aliases=['av'])
-    async def avatar(self, ctx, *,  avamember : nextcord.Member=None):
-      embed = nextcord.Embed(title="Avatar of " + avamember.mention)
-      embed.set_image(url=avamember.avatar_url)
-      embed.set_author(name=ctx.name, icon_url=ctx.avatar_url)
+    async def avatar(self, ctx, *,  avamember:nextcord.Member=None):
+      if avamember == None:
+        avamember = ctx.message.author
+      embed = nextcord.Embed(title=avamember.name + "'s avatar")
+      embed.set_image(url=avamember.display_avatar.url)
       await ctx.send(embed=embed)
