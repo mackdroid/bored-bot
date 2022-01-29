@@ -2,19 +2,54 @@ if __name__ == "__main__":
     print("This is a cog, execute main.py!")
     exit()
 
-import nextcord,re,json # nextcord for discord, re for regex, json for loading settings
+# supress sklearn's annoying warnings
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
+
+import nextcord,json # nextcord for discord, json for loading settings
 from nextcord import Interaction, SlashOption
 from nextcord.ext import commands
 from profanity_check import predict_prob # for profanity filter
+
+
 # import settings from settings.json
 vardb = json.load(open("settings.json"))
 
+# setup
+def setup(client):
+    client.add_cog(utils(client))
 
 class utils(commands.Cog):
     def __init__(self, client):
         self.client = client
 
-    
+    @commands.command(pass_context=True) # load unload cogs for debugging purposes
+    async def sudo(self,ctx,arg1=None,arg2=None):
+        if ctx.message.author.id != vardb["owner_id"]:
+            await ctx.send("Access Denied")
+            return
+        if arg1 == "reload_cog":
+            try:
+                self.client.reload_extension(arg2) 
+                await ctx.send("Reloaded "+arg2+"!")
+            except Exception as e:
+                await ctx.send("Error: "+str(e))
+        elif arg1 == "unload_cog":
+            try:
+                self.client.unload_extension(arg2)
+                await ctx.send("Unloaded "+arg2+"!")
+            except Exception as e:
+                await ctx.send("Error: "+str(e))
+        elif arg1 == "load_cog":
+            try:
+                cog = "cogs."+arg2
+                self.client.load_extension(cog)
+                await ctx.send("Loaded "+arg2+"!")
+            except Exception as e:
+                await ctx.send("Error: "+str(e))
+        else:
+            await ctx.send("Usage: sudo <command> <arg>, where command is one of: reload_cog, unload_cog, load_cog")
+
     @commands.command(pass_context=True) # purge command for deleting messages
     @commands.has_permissions(administrator=True)
     async def purge(self, ctx, limit:int):

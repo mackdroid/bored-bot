@@ -1,21 +1,29 @@
 #!/usr/bin/env python
+from importlib import import_module
 import nextcord,json
+from os import listdir
 from nextcord.ext import commands
-from cogs.funcmds import funcmds
-from cogs.music import music
-from cogs.utils import utils
 
 vardb = json.load(open("settings.json"))
 client = commands.Bot(command_prefix=vardb["prefix"], intents=nextcord.Intents.all())
 
 print("Loading Cogs")
-client.add_cog(funcmds(client))
-client.add_cog(music(client))
-client.add_cog(utils(client))
+for cog in listdir('cogs'):
+    if cog.endswith('.py'):
+        cog = cog[:-3]
+        print ("Found "+cog+", Loading..")
+        try:
+            mod = "cogs."+cog
+            client.load_extension(mod)
+            print("Loaded "+cog)
+        except Exception as e:
+            print("Error loading "+cog+": "+str(e))
+    else:
+        print("Found file "+cog+", but it does not seem to be a cog.")
 
-if "teams" in vardb.keys(): 
-    from cogs.teams import teams
-    client.add_cog(teams(client))
+
+
+
 
 print("Cogs sucessfully loaded")
 

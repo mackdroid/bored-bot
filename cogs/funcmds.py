@@ -7,6 +7,10 @@ from nextcord.ext import commands
 # import settings from settings.json
 vardb = json.load(open("settings.json"))
 
+# setup
+def setup(client):
+    client.add_cog(funcmds(client))
+
 # setup dpfx for easy access to prefix
 dpfx = vardb["prefix"]
 

@@ -3,6 +3,7 @@ if __name__ == "__main__":
     exit()
     
 # imports
+from aiohttp import client
 import nextcord,json
 from nextcord import Interaction
 from async_timeout import asyncio
@@ -11,6 +12,13 @@ from datetime import datetime, timedelta
 
 # load settings from settings.json
 vardb = json.load(open("settings.json"))
+
+# setup
+def setup(client):
+    if "teams" in vardb.keys(): 
+        client.add_cog(teams(client))
+    else:
+        print("No teams key found in settings.json, disabling cog.")
 
 # Setup cl var to be used to store the class links
 global cl
@@ -33,6 +41,7 @@ def retclasslinks(title,desc,cl):
 class teams(commands.Cog):
     def __init__(self, client):
         self.client = client
+
     @nextcord.slash_command( # Command to retrive the class meeting links
         name="classlinks",
         description="Prints class meeting links!",
