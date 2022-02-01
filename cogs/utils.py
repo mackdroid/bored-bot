@@ -30,13 +30,15 @@ class utils(commands.Cog):
             return
         if arg1 == "reload_cog":
             try:
-                self.client.reload_extension(arg2) 
+                cog = "cogs."+arg2
+                self.client.reload_extension(cog) 
                 await ctx.send("Reloaded "+arg2+"!")
             except Exception as e:
                 await ctx.send("Error: "+str(e))
         elif arg1 == "unload_cog":
             try:
-                self.client.unload_extension(arg2)
+                cog = "cogs."+arg2
+                self.client.unload_extension(cog)
                 await ctx.send("Unloaded "+arg2+"!")
             except Exception as e:
                 await ctx.send("Error: "+str(e))
