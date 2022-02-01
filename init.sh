@@ -1,2 +1,2 @@
 #!/usr/bin/fish
-poetry run ./main.py
+toolbox run poetry run ./main.py
