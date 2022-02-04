@@ -2,15 +2,22 @@ if __name__ == "__main__":
     print("This is a cog, execute main.py!")
     exit()
 
-# imports
-from ast import alias
-from distutils import command
-import queue
+import asyncio
+import html
+import json
+import re
+
+import discord
 import nextcord
-from nextcord.ext import commands
+import requests
+import youtube_dl
 from nextcord import FFmpegOpusAudio, guild
+from nextcord.ext import commands
 from youtube_dl import YoutubeDL
-import requests,json,re,html,youtube_dl,discord,asyncio
+
+# load settings from settings.json
+vardb = json.load(open("settings.json"))
+dpfx = vardb["prefix"]
 
 # initialize queue
 songqueue = {}
@@ -38,16 +45,46 @@ ffmpegOpts = {
 # setup
 def setup(client):
     voices = client.voice_clients
+    songqueue.clear()
     if voices is not None:
         for voice in voices:
             client.loop.create_task(voice.disconnect())
     client.add_cog(music(client))
 
-class music(commands.Cog):
-    def __init__(self, client):
-        self.client = client
+class QUEUE():
+    def now_playing(self,ctx):
+        guild_id=ctx.guild.id
+        if ctx.guild.id not in songqueue.keys():
+            songqueue[guild_id] = []
+        voice = ctx.channel.guild.voice_client
+        if voice is None:
+            return None
+        if voice.is_playing():
+            return songqueue[guild_id][0]
 
-    def args_to_url(self,args): # convert parse search query to ytdl urls
+    def get_current_song(self,ctx):
+        guild_id=ctx.guild.id
+        if ctx.guild.id not in songqueue.keys():
+            songqueue[guild_id] = []
+        voice = ctx.channel.guild.voice_client
+        if voice is None:
+            return None
+        return songqueue[guild_id][0]
+
+    def next(self,ctx):
+        guild_id=ctx.guild.id
+        if len(songqueue[guild_id]) > 1:
+            songqueue[guild_id].pop(0)
+            return songqueue[guild_id][0]
+        else:
+            return None
+    
+    def clear(self,ctx):
+        guild_id=ctx.guild.id
+        songqueue[guild_id] = []
+        return None
+    
+    def args_to_url(self,ctx,args): # convert parse search query to ytdl urls
         if type(args) is tuple:
             args = " ".join(args)
         with YoutubeDL(ytdlOpts) as ytdl:
@@ -71,6 +108,38 @@ class music(commands.Cog):
                 thumb = ytdlData['entries'][0]['thumbnail']
                 return url,src,thumb,title # return the url, source, thumbnail, and song title
 
+    def add(self,ctx,arg):
+        if ctx.guild.id not in songqueue.keys():
+            songqueue[ctx.guild.id] = []
+        url,src,thumb,title = self.args_to_url(ctx,arg)
+        songqueue[ctx.guild.id].append([url,src,thumb,title,ctx])
+        return url,src,thumb,title,ctx
+
+    def remove(self,ctx,id):
+        if ctx.guild.id not in songqueue.keys():
+            songqueue[ctx.guild.id] = []
+        songqueue[ctx.guild.id].pop(id)
+        return None
+    
+    def clear(self,ctx):
+        songqueue[ctx.guild.id] = []
+        return None
+
+class PLAYER():
+    def __init__(self,client) -> None:
+        self.client = client
+        
+    def player(self,ctx,url):
+        voice = ctx.channel.guild.voice_client
+        guildid = ctx.guild.id
+        player = FFmpegOpusAudio(url, **ffmpegOpts)
+        after = lambda err : self.after(guildid,err)
+        try:
+            voice.play(player,after=after)
+        except Exception as e:
+            return e
+        return
+
     async def ensure_voice(self,ctx): # check if the bot is in the same voice channel as the user
         guild_id=ctx.guild.id
         voice = ctx.channel.guild.voice_client
@@ -89,8 +158,20 @@ class music(commands.Cog):
                 await voice.move_to(ctx.author.voice.channel)
                 embed = nextcord.Embed(title="Inconsistency in bot's channel, Moved to your voice channel.", color=colors["neutral"])
                 await ctx.send(embed=embed)
-            await ctx.guild.change_voice_state(channel=ctx.author.voice.channel, self_mute=False, self_deaf=True)
+            await ctx.guild.change_voice_state(channel=ctx.author.voice.channel, self_mute=False, self_deaf=True)    
 
+    def after(self,guildid,err):
+        ctx = songqueue[guildid][0][4]
+        nxt = QUEUE().next(ctx)
+        if nxt is None:  
+            coro = ctx.send(nextcord.Embed(title="Song ended.",description="Queue is empty cannot proceed, add songs using the {}play/add command".format(dpfx),color=colors["success"]))
+        fut = asyncio.run_coroutine_threadsafe(coro, self.client.loop)
+        try:
+            fut.result()
+        except Exception as e:
+            print(e)
+            pass  
+        
     async def play(self,ctx,arg): # play a song
         if arg == ():
                 embed = nextcord.Embed(title="Please enter a search query.",description="Youtube and spotify links are accepted, if otherwise query terms will be considered as youtube search terms",color=0xf54257)
@@ -98,105 +179,71 @@ class music(commands.Cog):
                 return
         await self.ensure_voice(ctx)
         guild_id = ctx.guild.id
+        voice = ctx.channel.guild.voice_client
         if guild_id not in songqueue.keys():
             songqueue[guild_id] = []
-        voice = ctx.channel.guild.voice_client
         if voice.is_playing():
-            server_id=ctx.guild.id
-            query = self.args_to_url(arg)
-            songqueue[server_id].append(query)
-            color = colors["spot"] if query[1]=="spot" else colors["yts"]
-            embed = nextcord.Embed(title="Already playing song", description=f"**Added {query[3]} to queue**", color=color)
-            await ctx.send(embed=embed)
-        else:
-            server_id=ctx.guild.id
-            query = self.args_to_url(arg)
-            songqueue[server_id].append(query)
-            await self.queue_handler(ctx,"next")
-
-    def player(self,ctx,url):
-        voice = ctx.channel.guild.voice_client
-        player = FFmpegOpusAudio(url, **ffmpegOpts)
-        after = self.queue_handler(ctx,"next")
+            embed = nextcord.Embed(title="Song already playing, adding to Queue",color=colors["neutral"])
+            message = await ctx.send(embed=embed)
+            try:
+                url,src,thumb,title,ctx = QUEUE().add(ctx,arg)
+                if src == "spot":
+                    color = colors["spot"]
+                else:
+                    color = colors["yts"]
+                embed = nextcord.Embed(title="Song already playing, added to Queue",description=title,color=color)
+                await message.edit(embed=embed)
+            except Exception as e:
+                embed = nextcord.Embed(title="Tried to add to queue but an error occured",description="Error:"+str(e),color=colors["error"])
+                await message.edit(embed=embed)
+            return
+        QUEUE().add(ctx,arg)
+        song = QUEUE().get_current_song(ctx)
         try:
-            voice.play(player,after=after)
-        except:
-            return Exception
-        voice.is_playing()
-        return 
-
-    async def queue(self,ctx):
-        guild_id=ctx.guild.id
-        if guild_id not in songqueue.keys():
-                songqueue[guild_id] = []
-        voice = ctx.channel.guild.voice_client
-        # if voice is not None and voice.is_playing():
-        #     description = "Now playing: "+songqueue[guild_id][0][3]
-        # else:
-        description = ""
-        embed = discord.Embed(title="Song Queue", description=description, color=colors["neutral"])
-        if len(songqueue[guild_id]) > 1:
-            for i in songqueue[guild_id]:
-                id = songqueue[guild_id].index(i)
-                embed.add_field(name=str(id)+". "+i[3], value=f"`id {id}`",inline=False)
-        else:
-            embed.add_field(name="No songs in queue", value="songs are added automatically to queue when there is already a song playing",inline=False)
-        await ctx.send(embed=embed)
-
-    async def queue_handler(self,ctx,arg):
-        voice = ctx.channel.guild.voice_client
-        guild_id=ctx.guild.id
-        if voice is None:
-            embed = nextcord.Embed(title="Bot not in a voice channel to continue",color=colors["error"])
+            url = song[0]
+            self.player(ctx, url)
+            if song[1] == "spot":
+                color = colors["spot"]
+            else:
+                color = colors["yts"]
+            embed = nextcord.Embed(title=f"Now Playing: {song[3]}",description=f"Source: {song[1]}",color=color) 
+            await ctx.send(embed=embed)
+        except Exception as e:
+            embed = nextcord.Embed(title="An Error Occured",description=e,color=colors["error"])
             await ctx.send(embed=embed)
             return
-        if guild_id not in songqueue.keys():
-            songqueue[guild_id] = []
-        if len(songqueue[guild_id]) >= 1:
-            if arg == "skip":
-                voice.stop()
-            for i in range(3):
-                server_id=ctx.guild.id
-                url,src,thumb,title = songqueue[server_id][0]
-                player = self.player(ctx,url)
-                if player is None:
-                    color = colors["spot"] if src == "spot" else colors["yts"] 
-                    embed = nextcord.Embed(title="Playing "+ title, color=colors["success"], colour=color)
-                    embed.set_thumbnail(url=thumb)
-                    await ctx.send(embed=embed)
-                    songqueue[server_id].pop(0)  
-                    break
-                else:
-                    embed = nextcord.Embed(title="A Player error occured:",description=Exception,color=colors["error"])
-                    await ctx.send(embed=embed)
-                    if i == 2:
-                        embed = nextcord.Embed(title="Failed to play song, removing from queue",color=colors["error"])
-                        await ctx.send(embed=embed)
-                        songqueue[server_id].pop(0)
-                        break
-            else:
-                if arg != "next":
-                    embed = nextcord.Embed(title="Queue is empty", description="Add some using the play/add command", color=colors["neutral"])
-                    await ctx.send(embed=embed)
 
-    async def stop(self,ctx):
-        voice = ctx.channel.guild.voice_client
-        guild_id=ctx.guild.id
-        if voice is not None:
-            songqueue[guild_id].clear()
-            await voice.disconnect()
-            embed = nextcord.Embed(title="Stopped playing music, and cleared song queue", color=colors["success"])
-        else:
-            embed = nextcord.Embed(title="Bot not in a voice channel", color=colors["error"])
-        await ctx.send(embed=embed)
+class music(commands.Cog):
+    def __init__(self, client):
+        self.client = client
+    
+    buffer = dict()
 
     @commands.command(name="play",aliases=["p","add","a"]) # play command
-    async def command_play(self,ctx,*args):
-        await self.play(ctx,args)
+    async def command_play(self,ctx,*arg):
+        p = PLAYER()
+        await p.play(ctx,arg)
 
     @commands.command(name="queue",aliases=["q","list","l"]) # list the queue
     async def command_queue(self,ctx):
-        await self.queue(ctx)
+        guild_id=ctx.guild.id
+        if guild_id not in songqueue.keys():
+                songqueue[guild_id] = []
+        np = QUEUE().now_playing(ctx)
+        if np != None:
+            description = "**Now playing:** "+ np[3]
+        else:
+            description = ""
+        embed = discord.Embed(title="Song Queue", description=description, color=colors["neutral"])
+        if len(songqueue[guild_id]) > 1:
+            for i in songqueue[guild_id]:
+                if i == songqueue[guild_id][0]:
+                    continue
+                id = songqueue[guild_id].index(i)
+                embed.add_field(name=str(id)+". "+i[3], value=f"`Position {id}`",inline=False)
+        else:
+            embed.add_field(name="No songs in queue", value="songs are added automatically to queue when there is already a song playing",inline=False)
+        await ctx.send(embed=embed)
 
     @commands.command(name="skip",aliases=["s","next"]) # skip the current song
     async def command_skip(self,ctx):
@@ -204,14 +251,21 @@ class music(commands.Cog):
 
     @commands.command(name="join",aliases=["j","connect","c"])
     async def command_join(self,ctx):
-        await self.ensure_voice(ctx)
+        await PLAYER().ensure_voice(ctx)
     @commands.command()
     async def dump(self,ctx):
         ctx.send(songqueue)
 
     @commands.command(name="stop",aliases=["st","end","fuckoff"]) # stop the bot from playing music
     async def command_stop(self,ctx):
-        await self.stop(ctx)
+        voice = ctx.channel.guild.voice_client
+        if voice is not None:
+            QUEUE().clear(ctx)
+            await voice.disconnect()
+            embed = nextcord.Embed(title="Stopped playing music, and cleared song queue", color=colors["success"])
+        else:
+            embed = nextcord.Embed(title="Bot not in a voice channel", color=colors["error"])
+        await ctx.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after): # checks if there are more than one person in the voice channel or else leaves
