@@ -5,7 +5,7 @@ from os import listdir
 from nextcord.ext import commands
 
 vardb = json.load(open("settings.json"))
-client = commands.Bot(command_prefix=vardb["prefix"], intents=nextcord.Intents.all())
+client = commands.Bot(command_prefix=commands.when_mentioned_or(vardb["prefix"]), intents=nextcord.Intents.all())
 
 print("Loading Cogs")
 for cog in listdir('cogs'):
@@ -21,15 +21,11 @@ for cog in listdir('cogs'):
     else:
         print("Found file "+cog+", but it does not seem to be a cog.")
 
-
-
-
-
 print("Cogs sucessfully loaded")
 
 @client.event
 async def on_ready():
-    print(f'We have logged in as {client.user}')
+    print(f'We havelogged in as {client.user}')
 
 
 client.run(vardb["disc_token"])
