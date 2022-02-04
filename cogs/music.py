@@ -15,10 +15,6 @@ from nextcord import FFmpegOpusAudio, guild
 from nextcord.ext import commands
 from youtube_dl import YoutubeDL
 
-# load settings from settings.json
-vardb = json.load(open("settings.json"))
-dpfx = vardb["prefix"]
-
 # initialize queue
 songqueue = {}
 colors = {
@@ -164,8 +160,13 @@ class PLAYER():
         ctx = songqueue[guildid][0][4]
         nxt = QUEUE().next(ctx)
         if nxt is None:  
-            coro = ctx.send(nextcord.Embed(title="Song ended.",description="Queue is empty cannot proceed, add songs using the {}play/add command".format(dpfx),color=colors["success"]))
+            coro = ctx.send(embed=nextcord.Embed(title="Song ended.",description="Queue is empty cannot proceed, add songs using the play/add command",color=colors["success"]))
+        else:
+            url,src,title = nxt[0],nxt[1],nxt[3]
+            coro = ctx.send(embed=nextcord.Embed(title="Playing Next",description="**"+title+"**",color=colors[src]))
         fut = asyncio.run_coroutine_threadsafe(coro, self.client.loop)
+        if nxt is not None:
+            self.player(ctx,url)
         try:
             fut.result()
         except Exception as e:
@@ -187,11 +188,8 @@ class PLAYER():
             message = await ctx.send(embed=embed)
             try:
                 url,src,thumb,title,ctx = QUEUE().add(ctx,arg)
-                if src == "spot":
-                    color = colors["spot"]
-                else:
-                    color = colors["yts"]
-                embed = nextcord.Embed(title="Song already playing, added to Queue",description=title,color=color)
+                embed = nextcord.Embed(title="Song already playing, added to Queue",description=title,color=colors[src])
+                embed.set_thumbnail(url=thumb)
                 await message.edit(embed=embed)
             except Exception as e:
                 embed = nextcord.Embed(title="Tried to add to queue but an error occured",description="Error:"+str(e),color=colors["error"])
@@ -200,29 +198,47 @@ class PLAYER():
         QUEUE().add(ctx,arg)
         song = QUEUE().get_current_song(ctx)
         try:
-            url = song[0]
+            url,src,thumb = song[0],song[1],song[2]
             self.player(ctx, url)
-            if song[1] == "spot":
-                color = colors["spot"]
-            else:
-                color = colors["yts"]
-            embed = nextcord.Embed(title=f"Now Playing: {song[3]}",description=f"Source: {song[1]}",color=color) 
+            embed = nextcord.Embed(title=f"Now Playing: {song[3]}",description=f"Source: {song[1]}",color=colors[src])
+            embed.set_thumbnail(url=thumb)
             await ctx.send(embed=embed)
         except Exception as e:
             embed = nextcord.Embed(title="An Error Occured",description=e,color=colors["error"])
             await ctx.send(embed=embed)
+            voice.stop()
+            nxt = QUEUE().next(ctx)
+            if nxt is None:  
+                ctx.send(embed=nextcord.Embed(title="Skipped song.",description="Queue is empty cannot proceed, add songs using the play/add command",color=colors["success"]))
+            else:
+                url,src,title = nxt[0],nxt[1],nxt[3]
+                ctx.send(embed=nextcord.Embed(title="Skipped song, Playing Next",description="**"+title+"**",color=colors[src]))
+        
+    async def skip(self,ctx):
+        await self.ensure_voice(ctx)
+        voice = ctx.channel.guild.voice_client
+        try:
+            voice.stop()
+            nxt = QUEUE().next(ctx)
+            if nxt is None:  
+                await ctx.send(embed=nextcord.Embed(title="Skipped song.",description="Queue is empty cannot proceed, add songs using the play/add command",color=colors["success"]))
+            else:
+                url,src,title = nxt[0],nxt[1],nxt[3]
+                await ctx.send(embed=nextcord.Embed(title="Skipped song, Playing Next",description="**"+title+"**",color=colors[src]))
+                self.player(ctx,url)
+        except Exception as e:
+            ctx.send(embed=nextcord.Embed(title="An Error Occured whilist trying to skip song",description=e,color=colors["error"]))
             return
+        
 
 class music(commands.Cog):
     def __init__(self, client):
         self.client = client
-    
-    buffer = dict()
-
+        self.p = PLAYER(self.client)
     @commands.command(name="play",aliases=["p","add","a"]) # play command
     async def command_play(self,ctx,*arg):
-        p = PLAYER()
-        await p.play(ctx,arg)
+        
+        await self.p.play(ctx,arg)
 
     @commands.command(name="queue",aliases=["q","list","l"]) # list the queue
     async def command_queue(self,ctx):
@@ -247,11 +263,12 @@ class music(commands.Cog):
 
     @commands.command(name="skip",aliases=["s","next"]) # skip the current song
     async def command_skip(self,ctx):
-        await self.queue_handler(ctx,"skip")
+        await self.p.skip(ctx)
 
     @commands.command(name="join",aliases=["j","connect","c"])
     async def command_join(self,ctx):
-        await PLAYER().ensure_voice(ctx)
+        await self.p.ensure_voice(ctx)
+        
     @commands.command()
     async def dump(self,ctx):
         ctx.send(songqueue)
