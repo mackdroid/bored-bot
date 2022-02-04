@@ -3,10 +3,8 @@ if __name__ == "__main__":
     exit()
     
 # imports
-from aiohttp import client
-import nextcord,json
+import nextcord,json,asyncio
 from nextcord import Interaction
-from async_timeout import asyncio
 from nextcord.ext import commands
 from datetime import datetime, timedelta
 
@@ -60,6 +58,7 @@ class teams(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
+        while True:
             now = datetime.now()
             seconds_to_event = round((timedelta(hours=24) - (now - now.replace(hour=7, minute=50, second=0, microsecond=0))).total_seconds() % (24 * 3600))
             await asyncio.sleep(seconds_to_event) # Calculate the time until the next 7:50am (when my online classes start) in seconds
