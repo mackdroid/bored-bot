@@ -1,11 +1,18 @@
 if __name__ == "__main__":
     print("This is a cog, execute main.py!")
     exit()
-import nextcord,random,json,requests
+from turtle import color
+import nextcord
+import random
+import json
+import requests
+from PIL import Image
 from nextcord import Interaction, SlashOption
 from nextcord.ext import commands
 # import settings from settings.json
 vardb = json.load(open("settings.json"))
+
+snipedb={}
 
 # setup
 def setup(client):
@@ -13,6 +20,15 @@ def setup(client):
 
 # setup dpfx for easy access to prefix
 dpfx = vardb["prefix"]
+
+def get_dominant_color(image_url):
+    image = Image.open(requests.get(image_url, stream=True).raw)
+    image = image.resize((16, 16))
+    r, g, b = image.split()
+    r = sum(i * j for i, j in zip(r.getdata(), [1, 4, 6, 4, 1]))
+    g = sum(i * j for i, j in zip(g.getdata(), [1, 4, 6, 4, 1]))
+    b = sum(i * j for i, j in zip(b.getdata(), [1, 4, 6, 4, 1]))
+    return '#{:02x}{:02x}{:02x}'.format(r, g, b)
 
 class funcmds(commands.Cog):
     def __init__(self, client):
@@ -142,6 +158,36 @@ class funcmds(commands.Cog):
     async def avatar(self, ctx, *,  avamember:nextcord.Member=None):
       if avamember == None:
         avamember = ctx.message.author
-      embed = nextcord.Embed(title=avamember.name + "'s avatar")
-      embed.set_image(url=avamember.display_avatar.url)
+      avaurl = avamember.display_avatar.url
+      color = get_dominant_color(avaurl)
+      embed = nextcord.Embed(title=avamember.name + "'s avatar", color=color)
+      embed.set_image(url=avaurl)
       await ctx.send(embed=embed)
+      
+    @commands.command(aliases=['sn'])
+    async def snipe(self,ctx):
+      chanid = ctx.message.channel.id
+      if chanid not in snipedb.keys():
+        snipedb[chanid] = {}
+        embed = nextcord.Embed(title="No messages have been sniped in this channel yet.",description="How unfortunate!")
+        await ctx.send(embed=embed)
+      else:
+        content = snipedb[chanid]['content']
+        author = snipedb[chanid]['author']
+        embed = nextcord.Embed(title="Sniped message (ゝ‿ മ)",description=content)
+        embed.add_field(name="Sent by: ",value=author)
+        await ctx.send(embed=embed)
+        
+    @commands.Cog.listener()
+    async def on_message_delete(self,message):
+      if message.author.bot == False:
+        if message.content.startswith(dpfx):
+          return
+        else:
+          author = message.author.mention
+          chanid = message.channel.id
+          content = message.content
+          dict = {'content':content,'author':author}
+          if chanid not in snipedb.keys():
+            snipedb[chanid] = {}
+          snipedb[chanid] = dict
