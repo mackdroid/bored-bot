@@ -19,5 +19,4 @@ and dont forget to install the requirements using `pip install -r requirements.t
 
 # credits
 * [itspacchu](https://github.com/itspacchu) for help with various stuff
-* [NoiceNoiceBaby](https://github.com/NoiceNoiceBaby) for the mute command
 * and others
