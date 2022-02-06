@@ -1,6 +1,5 @@
 ## boredbot
-just another discord bot made to learn python
-this bots main function is to cache teams meeting links and send them right before the classes start
+discord bot i made to learn python
 to setup the bot you need a `settings.py` which contains the token and other stuff as follows
 * the discord token `disc_token`
 * `prefix` for commands
