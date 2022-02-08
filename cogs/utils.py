@@ -125,13 +125,13 @@ class utils(commands.Cog):
     async def on_message(self, message):
         if message.author == self.client.user: # if message is from bot ignore
             return
-        whitelisted_ids = vardb["ProfCheck"].keys() # get whitelisted ids
+        whitelisted_ids = vardb["profCheck"].keys() # get whitelisted ids
         if str(message.guild.id) in whitelisted_ids: # check if guild is whitelisted
             msg_predict_prob = predict_prob([str(message.content)])[0]*100
             # await message.channel.send("this message has a probability of " + str(msg_predict_prob)+ "% , containing profanity")
             if int(msg_predict_prob) > 82 : # if message contains profanity
                 await message.delete()
-                channel = self.client.get_channel(vardb["ProfCheck"][str(message.guild.id)]) # get log channel
+                channel = self.client.get_channel(vardb["profCheck"][str(message.guild.id)]) # get log channel
                 if channel is not None:
                     await channel.send(f"Message containing: ```{message.content}```Deleted in {message.channel.name} sent by {message.author.mention},\nPrediction percentage: {msg_predict_prob}")
                 return

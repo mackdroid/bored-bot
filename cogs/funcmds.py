@@ -1,11 +1,12 @@
 if __name__ == "__main__":
     print("This is a cog, execute main.py!")
     exit()
-from turtle import color
+
 import nextcord
 import random
 import json
 import requests
+from io import BytesIO
 from PIL import Image
 from nextcord import Interaction, SlashOption
 from nextcord.ext import commands
@@ -21,14 +22,15 @@ def setup(client):
 # setup dpfx for easy access to prefix
 dpfx = vardb["prefix"]
 
+# resize image to 1x1 pixels and return colour as hex
 def get_dominant_color(image_url):
-    image = Image.open(requests.get(image_url, stream=True).raw)
-    image = image.resize((16, 16))
-    r, g, b = image.split()
-    r = sum(i * j for i, j in zip(r.getdata(), [1, 4, 6, 4, 1]))
-    g = sum(i * j for i, j in zip(g.getdata(), [1, 4, 6, 4, 1]))
-    b = sum(i * j for i, j in zip(b.getdata(), [1, 4, 6, 4, 1]))
-    return '#{:02x}{:02x}{:02x}'.format(r, g, b)
+    response = requests.get(image_url)
+    img = Image.open(BytesIO(response.content))
+    img = img.resize((1, 1))
+    data = list(img.getdata())
+    rgb = data[0]
+    color = nextcord.Color.from_rgb(rgb[0], rgb[1], rgb[2])
+    return color
 
 class funcmds(commands.Cog):
     def __init__(self, client):
@@ -124,7 +126,8 @@ class funcmds(commands.Cog):
           url = json.loads(requests.get(apiurl).text)["url"]
         else:
           url = json.loads(requests.get(apiurl).text)[0]["url"]
-        embed = nextcord.Embed(description=prefix + author + " " + suffix)
+        color = get_dominant_color(url)
+        embed = nextcord.Embed(description=prefix + author + " " + suffix , color=color)
         footer = random.choice([f"use `{dpfx}gif help` for more more categories","UwU","owo"])
         embed.set_footer(text=footer)
         embed.set_image(url=url)
@@ -137,8 +140,9 @@ class funcmds(commands.Cog):
     async def gif(self,ctx,category=None,person : nextcord.Member=None):
       try:
         await ctx.send(embed=self.get_gif(category,person,ctx.message.author.mention))
-      except:
-        await ctx.send("An error occured while trying to get a gif, please try again later.")
+      except Exception as e:
+        embed = nextcord.Embed(title="Something went wrong, try again later.", description=e)
+        await ctx.send(embed=embed)
 
     @nextcord.slash_command(name="gif", # Send a gif from random apis
             description="Send a GIF from different categories")

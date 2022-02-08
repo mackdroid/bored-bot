@@ -159,7 +159,8 @@ class PLAYER():
     def after(self,guildid,err):
         ctx = songqueue[guildid][0][4]
         nxt = QUEUE().next(ctx)
-        if nxt is None:  
+        if nxt is None:
+            songqueue[guildid].pop(0)
             coro = ctx.send(embed=nextcord.Embed(title="Song ended.",description="Queue is empty cannot proceed, add songs using the play/add command",color=colors["success"]))
         else:
             url,src,title = nxt[0],nxt[1],nxt[3]
@@ -188,7 +189,7 @@ class PLAYER():
             message = await ctx.send(embed=embed)
             try:
                 url,src,thumb,title,ctx = QUEUE().add(ctx,arg)
-                embed = nextcord.Embed(title="Song already playing, added to Queue",description=title,color=colors[src])
+                embed = nextcord.Embed(title="Song already playing, added to Queue",description="**"+title+"**",color=colors[src])
                 embed.set_thumbnail(url=thumb)
                 await message.edit(embed=embed)
             except Exception as e:
