@@ -56,14 +56,14 @@ class teams(commands.Cog):
                 self.cl.append(message.content)
                 await message.add_reaction('✅')
 
-    @commands.Cog.listener()
-    async def on_ready(self):
-        while True:
-            now = datetime.now()
-            seconds_to_event = round((timedelta(hours=24) - (now - now.replace(hour=7, minute=50, second=0, microsecond=0))).total_seconds() % (24 * 3600))
-            await asyncio.sleep(seconds_to_event) # Calculate the time until the next 7:50am (when my online classes start) in seconds
-            for channel in vardb["teams"]["DailyPostlinkChIds"]:
-                await self.client.get_channel(channel).send(embeds=[retclasslinks("Time for class","Heres the Links ↓",cl)])
-            await asyncio.sleep(18600)
-            cl.clear() # clear the list containing class links
-            # repeat
+    # @commands.Cog.listener()
+    # async def on_ready(self):
+    #     while True:
+    #         now = datetime.now()
+    #         seconds_to_event = round((timedelta(hours=24) - (now - now.replace(hour=7, minute=50, second=0, microsecond=0))).total_seconds() % (24 * 3600))
+    #         await asyncio.sleep(seconds_to_event) # Calculate the time until the next 7:50am (when my online classes start) in seconds
+    #         for channel in vardb["teams"]["DailyPostlinkChIds"]:
+    #             await self.client.get_channel(channel).send(embeds=[retclasslinks("Time for class","Heres the Links ↓",cl)])
+    #         await asyncio.sleep(18600)
+    #         cl.clear() # clear the list containing class links
+    #         # repeat

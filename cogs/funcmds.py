@@ -2,6 +2,7 @@ if __name__ == "__main__":
     print("This is a cog, execute main.py!")
     exit()
 
+from pydoc import cli
 import nextcord
 import random
 import json
@@ -14,6 +15,7 @@ from nextcord.ext import commands
 vardb = json.load(open("settings.json"))
 
 snipedb={}
+editdb={}
 
 # setup
 def setup(client):
@@ -171,27 +173,67 @@ class funcmds(commands.Cog):
     @commands.command(aliases=['sn'])
     async def snipe(self,ctx):
       chanid = ctx.message.channel.id
-      if chanid not in snipedb.keys():
-        snipedb[chanid] = {}
-        embed = nextcord.Embed(title="No messages have been sniped in this channel yet.",description="How unfortunate!")
-        await ctx.send(embed=embed)
-      else:
+      try:
         content = snipedb[chanid]['content']
         author = snipedb[chanid]['author']
         embed = nextcord.Embed(title="Sniped message (ゝ‿ മ)",description=content)
         embed.add_field(name="Sent by: ",value=author)
         await ctx.send(embed=embed)
-        
+      except KeyError:
+        embed = nextcord.Embed(title="No messages have been sniped in this channel yet.",description="How unfortunate!")
+        await ctx.send(embed=embed)
+        return
+      
+    @commands.command(aliases=['es'])
+    async def editsnipe(self,ctx):
+      chanid = ctx.message.channel.id
+      try:
+        before = editdb[chanid]['before']
+        after = editdb[chanid]['after']
+        author = editdb[chanid]['author']
+        embed = nextcord.Embed(title="Sniped message (ゝ‿ മ)")
+        embed.add_field(name="Before:",value=before)
+        embed.add_field(name="After:",value=after)
+        embed.add_field(name="Sent by: ",value=author)
+        await ctx.send(embed=embed)
+      except KeyError:
+        embed = nextcord.Embed(title="No messages have been edited in this channel yet.",description="How unfortunate!")
+        await ctx.send(embed=embed)
+        return
+      
     @commands.Cog.listener()
     async def on_message_delete(self,message):
       if message.author.bot == False:
         if message.content.startswith(dpfx):
           return
-        else:
-          author = message.author.mention
-          chanid = message.channel.id
-          content = message.content
-          dict = {'content':content,'author':author}
-          if chanid not in snipedb.keys():
-            snipedb[chanid] = {}
-          snipedb[chanid] = dict
+      if message.author.bot == True:
+        return
+      if message.author.id == self.client.user.id:
+        return
+      if len(message.content) > 2:
+        return
+      author = message.author.mention
+      chanid = message.channel.id
+      content = message.content
+      dict = {'content':content,'author':author}
+      if chanid not in snipedb.keys():
+        snipedb[chanid] = {}
+      snipedb[chanid] = dict
+          
+    @commands.Cog.listener()
+    async def on_message_edit(self,before,after):
+      if before.author.bot == False:
+        if before.content.startswith(dpfx):
+          return
+      if before.author.bot == True:
+        return
+      if before.author.id == self.client.user.id:
+        return
+      chanid = before.channel.id
+      author = before.author.mention
+      before = before.content
+      after = after.content
+      dict = {'before':before,'after':after,'author':author}
+      if chanid not in editdb.keys():
+        editdb[chanid] = {}
+      editdb[chanid] = dict

@@ -61,14 +61,14 @@ class utils(commands.Cog):
         except:
             await ctx.send('Unknown Error, perhaps check permissions?')
 
-    @nextcord.slash_command(
-        name="purge",
-        description="Purge chat content",
-        default_permission=False
-    )
-    async def slash_purge(self,interaction:Interaction,limit:int):
-        await interaction.channel.purge(limit=limit)
-        await interaction.response.send_message('Cleared by {}'.format(interaction.user.mention),delete_after=3)
+    # @nextcord.slash_command(
+    #     name="purge",
+    #     description="Purge chat content",
+    #     default_permission=False
+    # )
+    # async def slash_purge(self,interaction:Interaction,limit:int):
+    #     await interaction.channel.purge(limit=limit)
+    #     await interaction.response.send_message('Cleared by {}'.format(interaction.user.mention),delete_after=3)
 
     @nextcord.slash_command( # change bot status
         name="status",
@@ -111,6 +111,7 @@ class utils(commands.Cog):
                 await interaction.response.send_message("An error occured")
         else:
             return
+        
     @nextcord.slash_command(name="ping", # Ping command
     description="Ping pong and view latency",
     )
@@ -126,7 +127,7 @@ class utils(commands.Cog):
         if message.author == self.client.user: # if message is from bot ignore
             return
         whitelisted_ids = vardb["profCheck"].keys() # get whitelisted ids
-        if str(message.guild.id) in whitelisted_ids: # check if guild is whitelisted
+        if str(message.guild.id) in whitelisted_ids and "damn" not in message.content: # check if guild is whitelisted
             msg_predict_prob = predict_prob([str(message.content)])[0]*100
             # await message.channel.send("this message has a probability of " + str(msg_predict_prob)+ "% , containing profanity")
             if int(msg_predict_prob) > 82 : # if message contains profanity

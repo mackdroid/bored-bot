@@ -13,6 +13,7 @@ asyncio = "^3.4.3"
 youtube_dl = "^2021.12.17"
 nextcord = "^2.0.0-alpha.6"
 Pillow = "^9.0.1"
+tinydb = "^4.6.1"
 
 [tool.poetry.dev-dependencies]
 

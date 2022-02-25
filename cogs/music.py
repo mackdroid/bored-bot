@@ -3,6 +3,7 @@ if __name__ == "__main__":
     exit()
 
 import asyncio
+import base64
 import html
 import json
 import re
@@ -11,7 +12,7 @@ import discord
 import nextcord
 import requests
 import youtube_dl
-from nextcord import FFmpegOpusAudio, guild
+from nextcord import FFmpegOpusAudio
 from nextcord.ext import commands
 from youtube_dl import YoutubeDL
 
@@ -87,8 +88,9 @@ class QUEUE():
             if args.find("https://open.spotify.com")==0:
                 src = "spot"
                 response = requests.get(args)
-                filter = re.search("\"entities\":.*\"podcasts\"",response.text).group(0)[11:-11] # scrape the spotify link for the track id
+                filter = base64.urlsafe_b64decode(re.search("<script type=\"application/json\" id=\"initial-state\">.*</script>",response.text).group(0)[51:-165]+"==") # scrape the spotify link for the track id
                 response = json.loads(filter)
+                response = response["entities"]
                 song_title = html.unescape(response["items"][list(response["items"].keys())[0]]["name"])
                 song_artist = html.unescape(response["items"][list(response["items"].keys())[0]]["artists"]["items"][0]["profile"]["name"])
                 searchstr = (song_title + " " + song_artist)
@@ -160,7 +162,6 @@ class PLAYER():
         ctx = songqueue[guildid][0][4]
         nxt = QUEUE().next(ctx)
         if nxt is None:
-            songqueue[guildid].pop(0)
             coro = ctx.send(embed=nextcord.Embed(title="Song ended.",description="Queue is empty cannot proceed, add songs using the play/add command",color=colors["success"]))
         else:
             url,src,title = nxt[0],nxt[1],nxt[3]
@@ -172,7 +173,7 @@ class PLAYER():
             fut.result()
         except Exception as e:
             print(e)
-            pass  
+            pass
         
     async def play(self,ctx,arg): # play a song
         if arg == ():
@@ -209,13 +210,13 @@ class PLAYER():
             await ctx.send(embed=embed)
             voice.stop()
             nxt = QUEUE().next(ctx)
-            if nxt is None:  
+            if nxt is None:
                 ctx.send(embed=nextcord.Embed(title="Skipped song.",description="Queue is empty cannot proceed, add songs using the play/add command",color=colors["success"]))
             else:
                 url,src,title = nxt[0],nxt[1],nxt[3]
                 ctx.send(embed=nextcord.Embed(title="Skipped song, Playing Next",description="**"+title+"**",color=colors[src]))
         
-    async def skip(self,ctx):
+    async def skip(self,ctx,position:None): # skip a song
         await self.ensure_voice(ctx)
         voice = ctx.channel.guild.voice_client
         try:
@@ -298,3 +299,9 @@ class music(commands.Cog):
             await asyncio.sleep(30)
             if member_count == 1:
                 await voice.disconnect()
+                guildid = member.guild.id
+                ctx = songqueue[guildid][0][4]
+                QUEUE().clear(ctx)
+                embed = nextcord.Embed(title="Left voice channel, and cleared queue", description="No one else in the voice channel :/", color=colors["neutral"])
+                await ctx.send(embed=embed)
+                

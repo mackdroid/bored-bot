@@ -29,5 +29,5 @@ async def on_ready():
     print(f'We have logged in as {client.user}')
 
 if __name__ == '__main__':
-    client.loop.create_task(main())
+    main()
     client.run(vardb["token"])
