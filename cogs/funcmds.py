@@ -210,7 +210,7 @@ class funcmds(commands.Cog):
         return
       if message.author.id == self.client.user.id:
         return
-      if len(message.content) > 2:
+      if len(message.content) < 2:
         return
       author = message.author.mention
       chanid = message.channel.id
