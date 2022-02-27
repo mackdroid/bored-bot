@@ -139,7 +139,11 @@ class funcmds(commands.Cog):
     @commands.command(aliases=['g'])
     async def gif(self,ctx,category=None,person:nextcord.Member=None):
       try:
-        await ctx.send(embed=self.get_gif(category,person.mention,ctx.message.author.mention))
+        try:
+          person = person.mention
+        except
+          person = None
+        await ctx.send(embed=self.get_gif(category,person,ctx.message.author.mention))
       except Exception as e:
         embed = nextcord.Embed(title="Something went wrong, try again later.", description=e)
         await ctx.send(embed=embed)
@@ -156,7 +160,11 @@ class funcmds(commands.Cog):
       name="person",
       required=False, 
       description="Choose a person to send the GIF to.")):
-      await interaction.response.send_message(embed=self.get_gif(category,person.mention,interaction.user.mention))
+      try:
+        person = person.mention
+      except:
+        person = None
+      await interaction.response.send_message(embed=self.get_gif(category,person,interaction.user.mention))
 
     @commands.command(aliases=['av'])
     async def avatar(self, ctx, *,  avamember:nextcord.Member=None):
