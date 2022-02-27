@@ -83,7 +83,7 @@ class funcmds(commands.Cog):
       await ctx.send(embed=self.get_meme()) # send embed with the meme
 
     def get_gif(self,category,person,author): # Get a gif from various gif sources
-      categories = ["kick","happy","wink","poke","dance","cringe","neko","cat","dog","kill","highfive","happy"]
+      # categories = ["kick","happy","wink","poke","dance","cringe","neko","cat","dog","kill","highfive","happy"]
       prefix = ""
       ishelp = False
       if person == None: # check for variable
@@ -179,6 +179,9 @@ class funcmds(commands.Cog):
     @commands.command(aliases=['sn'])
     async def snipe(self,ctx):
       chanid = ctx.message.channel.id
+      if chanid in vardb['profCheck'].keys():
+        embed = nextcord.Embed(title="Snipe disabled here due to me not being able to find a way to not let it bypass the profanity check")
+        return await ctx.send(embed=embed)
       try:
         content = snipedb[chanid]['content']
         author = snipedb[chanid]['author']
@@ -193,6 +196,9 @@ class funcmds(commands.Cog):
     @commands.command(aliases=['es'])
     async def editsnipe(self,ctx):
       chanid = ctx.message.channel.id
+      if chanid in vardb['profCheck'].keys():
+        embed = nextcord.Embed(title="Snipe disabled here due to me not being able to find a way to not let it bypass the profanity check")
+        return await ctx.send(embed=embed)
       try:
         before = editdb[chanid]['before']
         after = editdb[chanid]['after']
