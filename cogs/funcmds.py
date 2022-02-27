@@ -28,7 +28,7 @@ dpfx = vardb["prefix"]
 def get_dominant_color(image_url):
     response = requests.get(image_url)
     img = Image.open(BytesIO(response.content))
-    img = img.resize((1, 1))
+    img = img.resize((1, 1), Image.NEAREST)
     data = list(img.getdata())
     rgb = data[0]
     color = nextcord.Color.from_rgb(rgb[0], rgb[1], rgb[2])
@@ -82,15 +82,13 @@ class funcmds(commands.Cog):
     async def meme(self,ctx):
       await ctx.send(embed=self.get_meme()) # send embed with the meme
 
-    def get_gif(self,category:None,person:None,author:str): # Get a gif from various gif sources
+    def get_gif(self,category,person,author): # Get a gif from various gif sources
       categories = ["kick","happy","wink","poke","dance","cringe","neko","cat","dog","kill","highfive","happy"]
       prefix = ""
       ishelp = False
       if person == None: # check for variable
         person = random.choice(["himself..?","themselves.."])
         noarg2 = True
-      else:
-        person = person.mention
       if category == "kick" or category == "kill" or category == "highfive": # check for category
         suffix = category +f"s {person}!"
         apiurl = "https://api.waifu.pics/sfw/" + category
@@ -139,9 +137,9 @@ class funcmds(commands.Cog):
       return embed
 
     @commands.command(aliases=['g'])
-    async def gif(self,ctx,category=None,person : nextcord.Member=None):
+    async def gif(self,ctx,category=None,person:nextcord.Member=None):
       try:
-        await ctx.send(embed=self.get_gif(category,person,ctx.message.author.mention))
+        await ctx.send(embed=self.get_gif(category,person.mention,ctx.message.author.mention))
       except Exception as e:
         embed = nextcord.Embed(title="Something went wrong, try again later.", description=e)
         await ctx.send(embed=embed)
@@ -158,7 +156,7 @@ class funcmds(commands.Cog):
       name="person",
       required=False, 
       description="Choose a person to send the GIF to.")):
-      await interaction.response.send_message(embed=self.get_gif(category,person,interaction.user.mention))
+      await interaction.response.send_message(embed=self.get_gif(category,person.mention,interaction.user.mention))
 
     @commands.command(aliases=['av'])
     async def avatar(self, ctx, *,  avamember:nextcord.Member=None):
