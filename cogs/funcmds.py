@@ -141,7 +141,7 @@ class funcmds(commands.Cog):
       try:
         try:
           person = person.mention
-        except
+        except:
           person = None
         await ctx.send(embed=self.get_gif(category,person,ctx.message.author.mention))
       except Exception as e:
