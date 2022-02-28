@@ -179,8 +179,9 @@ class funcmds(commands.Cog):
     @commands.command(aliases=['sn'])
     async def snipe(self,ctx):
       chanid = ctx.message.channel.id
-      if chanid in vardb['profCheck'].keys():
-        embed = nextcord.Embed(title="Snipe disabled here due to me not being able to find a way to not let it bypass the profanity check")
+      servid = ctx.message.guild.id
+      if servid in vardb['profCheck'].keys():
+        embed = nextcord.Embed(title="Snipe disabled here due to me not being able to find a way to not let it bypass the profanity check, enabled after i figure out proper logging")
         return await ctx.send(embed=embed)
       try:
         content = snipedb[chanid]['content']
@@ -196,9 +197,12 @@ class funcmds(commands.Cog):
     @commands.command(aliases=['es'])
     async def editsnipe(self,ctx):
       chanid = ctx.message.channel.id
-      if chanid in vardb['profCheck'].keys():
+      servid = ctx.message.guild.id
+      if servid in vardb['profCheck'].keys():
         embed = nextcord.Embed(title="Snipe disabled here due to me not being able to find a way to not let it bypass the profanity check")
-        return await ctx.send(embed=embed)
+        await ctx.send(embed=embed)
+        return
+      
       try:
         before = editdb[chanid]['before']
         after = editdb[chanid]['after']
