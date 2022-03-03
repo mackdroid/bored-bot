@@ -28,9 +28,9 @@ dpfx = vardb["prefix"]
 def get_dominant_color(image_url):
     response = requests.get(image_url)
     img = Image.open(BytesIO(response.content))
-    img = img.resize((1, 1), Image.NEAREST)
+    # img = img.resize((1, 1), Image.NEAREST) # todo fix this awful shit
     data = list(img.getdata())
-    rgb = data[0]
+    rgb = random.choice(data)
     color = nextcord.Color.from_rgb(rgb[0], rgb[1], rgb[2])
     return color
 

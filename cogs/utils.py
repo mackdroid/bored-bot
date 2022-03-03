@@ -134,7 +134,9 @@ class utils(commands.Cog):
                 await message.delete()
                 channel = self.client.get_channel(vardb["profCheck"][str(message.guild.id)]) # get log channel
                 if channel is not None:
-                    await channel.send(f"Message containing: ```{message.content}```Deleted in {message.channel.name} sent by {message.author.mention},\nPrediction percentage: {msg_predict_prob}")
+                    embed = nextcord.Embed(title="Message Deleted",description=f"{message.author.mention} has been deleted for containing a profanity of {msg_predict_prob}%")
+                    embed.add_field(name="Message Content:",value=message.content)
+                    await channel.send(embed=embed)
                 return
 
 
