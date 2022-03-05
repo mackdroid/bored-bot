@@ -8,7 +8,6 @@ import html
 import json
 import re
 
-import discord
 import nextcord
 import requests
 import youtube_dl
@@ -22,8 +21,10 @@ colors = {
     "error" : 0xf54257,
     "success" : 0x6cf257,
     "neutral" : 0x43ccc3,
-    "spot": 0x1db954,
-    "yts": 0xc4302b
+    "spotify": 0x1db954,
+    "youtube": 0xc4302b,
+    "apple": 0xfc3c44,
+    "other" : 0xeba434
 }
 
 youtube_dl.utils.bug_reports_message = lambda: '' # supress errors
@@ -74,6 +75,7 @@ class QUEUE():
             songqueue[guild_id].pop(0)
             return songqueue[guild_id][0]
         else:
+            songqueue[guild_id] = []
             return None
     
     def clear(self,ctx):
@@ -85,21 +87,33 @@ class QUEUE():
         if type(args) is tuple:
             args = " ".join(args)
         with YoutubeDL(ytdlOpts) as ytdl:
-            if args.find("https://open.spotify.com")==0:
-                src = "spot"
-                response = requests.get(args)
-                filter = base64.urlsafe_b64decode(re.search("<script type=\"application/json\" id=\"initial-state\">.*</script>",response.text).group(0)[51:-165]+"==") # scrape the spotify link for the track id
-                response = json.loads(filter)
-                response = response["entities"]
-                song_title = html.unescape(response["items"][list(response["items"].keys())[0]]["name"])
-                song_artist = html.unescape(response["items"][list(response["items"].keys())[0]]["artists"]["items"][0]["profile"]["name"])
-                searchstr = (song_title + " " + song_artist)
-                ytdlData = ytdl.extract_info(f"ytsearch:{searchstr}", download=False) # search for the song from youtube
-                url = ytdlData['entries'][0]['formats'][1]['url']
-                thumb = response["items"][list(response["items"].keys())[0]]["album"]["coverArt"]["sources"][0]["url"] # get the thumbnail
-                return url,src,thumb,song_title+" by "+song_artist # return the url, source, thumbnail, and song title
+            if args.find("https://") != -1 or args.find("http://") != -1:
+                if args.find("https://www.youtube.com") != -1 or args.find("https://youtu.be") != -1:
+                    src = "youtube"
+                    ytdlData = ytdl.extract_info(args, download=False)
+                    title = ytdlData['title']
+                    url = ytdlData['formats'][1]['url']
+                    thumb = ytdlData['thumbnail']
+                    return url,src,thumb,title   
+                else:
+                    args = args.replace(" ","")
+                    if args.find("spotify") != -1:
+                        src="spotify"
+                    elif args.find("apple") != -1:
+                        src="apple"
+                    else:
+                        src="other"
+                    apiurl = "https://api.song.link/v1-alpha.1/links?url=" + args # scraping odesli website for the youtube equivalent of the link, their api is not open
+                    response = json.loads(requests.get(apiurl).text)
+                    song_title = response["entitiesByUniqueId"][response["entityUniqueId"]]["title"]
+                    song_artist = response["entitiesByUniqueId"][response["entityUniqueId"]]["artistName"]
+                    thumb = response["entitiesByUniqueId"][response["entityUniqueId"]]["thumbnailUrl"]
+                    yturl= response["linksByPlatform"]["youtube"]["url"]
+                    ytdlData = ytdl.extract_info(yturl, download=False) # search for the song from youtube
+                    url = ytdlData['formats'][1]['url']
+                    return url,src,thumb,song_title+" by "+song_artist # return the url, source, thumbnail, and song title
             else:
-                src = "yts"
+                src = "youtube"
                 ytdlData = ytdl.extract_info(f"ytsearch:{args}", download=False) # search for the song from youtube using youtube-dl 
                 title = ytdlData['entries'][0]['title']
                 url = ytdlData['entries'][0]['formats'][1]['url']
@@ -177,7 +191,7 @@ class PLAYER():
         
     async def play(self,ctx,arg): # play a song
         if arg == ():
-                embed = nextcord.Embed(title="Please enter a search query.",description="Youtube and spotify links are accepted, if otherwise query terms will be considered as youtube search terms",color=0xf54257)
+                embed = nextcord.Embed(title="Please enter a search query.",description="Most music streamings site links are accepted, if otherwise query terms will be considered as youtube search terms",color=0xf54257)
                 await ctx.send(embed=embed)
                 return
         await self.ensure_voice(ctx)
@@ -216,7 +230,7 @@ class PLAYER():
                 url,src,title = nxt[0],nxt[1],nxt[3]
                 ctx.send(embed=nextcord.Embed(title="Skipped song, Playing Next",description="**"+title+"**",color=colors[src]))
         
-    async def skip(self,ctx,position:None): # skip a song
+    async def skip(self,ctx,position:int): # skip a song
         await self.ensure_voice(ctx)
         voice = ctx.channel.guild.voice_client
         try:
@@ -252,7 +266,7 @@ class music(commands.Cog):
             description = "**Now playing:** "+ np[3]
         else:
             description = ""
-        embed = discord.Embed(title="Song Queue", description=description, color=colors["neutral"])
+        embed = nextcord.Embed(title="Song Queue", description=description, color=colors["neutral"])
         if len(songqueue[guild_id]) > 1:
             for i in songqueue[guild_id]:
                 if i == songqueue[guild_id][0]:
@@ -290,7 +304,7 @@ class music(commands.Cog):
     async def on_voice_state_update(self, member, before, after): # checks if there are more than one person in the voice channel or else leaves
         if member.id == self.client.user.id:
             return
-        voice = discord.utils.get(self.client.voice_clients, guild=member.guild)
+        voice = nextcord.utils.get(self.client.voice_clients, guild=member.guild)
         if voice is None:
             return
         voice_channel = voice.channel

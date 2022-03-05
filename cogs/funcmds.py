@@ -2,6 +2,7 @@ if __name__ == "__main__":
     print("This is a cog, execute main.py!")
     exit()
 
+from email import message
 from pydoc import cli
 import nextcord
 import random
@@ -115,6 +116,11 @@ class funcmds(commands.Cog):
       elif category == "dog":
         suffix = random.choice([f"'s {category}! 🐶","doggo!! 🐶"])
         apiurl = "https://api.thedogapi.com/v1/images/search"
+      elif category == "kiss":
+        suffix = random.choice([f"kisses {person}!",f"gives a peck to {person}!"])
+        apiurl = "https://api.waifu.pics/sfw/" + category
+      elif category == "pat":
+        suffix = random.choice([f"pats {person}!",f"gently pats {person}!"])
       elif category == "help":
         ishelp = True
       else:
@@ -126,14 +132,14 @@ class funcmds(commands.Cog):
           url = json.loads(requests.get(apiurl).text)["url"]
         else:
           url = json.loads(requests.get(apiurl).text)[0]["url"]
-        color = get_dominant_color(url)
-        embed = nextcord.Embed(description=prefix + author + " " + suffix , color=color)
-        footer = random.choice([f"use `{dpfx}gif help` for more more categories","UwU","owo"])
+        # color = get_dominant_color(url) # causes a lot of lag disabled for now
+        embed = nextcord.Embed(description=prefix + author + " " + suffix , color=0x5ce8ed)
+        footer = random.choice([f"use `{dpfx}gif help` for more more categories","uwu","owo"])
         embed.set_footer(text=footer)
         embed.set_image(url=url)
       else: # if help set embed to help menu
         embed=nextcord.Embed(title="Usage", description=f"{dpfx}g/gif [subcategory] [person]")
-        embed.add_field(name="Available Subcategories", value="waifu, kick, happy, wink, poke, dance, cringe, neko, cat, dog, kill, highfive, happy", inline=False)
+        embed.add_field(name="Available Subcategories", value="waifu, kick, happy, wink, poke, dance, cringe, neko, cat, dog, kill, highfive, happy, pat, kiss", inline=False)
       return embed
 
     @commands.command(aliases=['g'])
@@ -180,8 +186,8 @@ class funcmds(commands.Cog):
     async def snipe(self,ctx):
       chanid = ctx.message.channel.id
       servid = ctx.message.guild.id
-      if servid in vardb['profCheck'].keys():
-        embed = nextcord.Embed(title="Snipe disabled here due to me not being able to find a way to not let it bypass the profanity check, enabled after i figure out proper logging")
+      if str(servid) in list(vardb['profCheck'].keys()):
+        embed = nextcord.Embed(title="Snipe disabled due to conflicts with profanity check")
         return await ctx.send(embed=embed)
       try:
         content = snipedb[chanid]['content']
@@ -198,11 +204,10 @@ class funcmds(commands.Cog):
     async def editsnipe(self,ctx):
       chanid = ctx.message.channel.id
       servid = ctx.message.guild.id
-      if servid in vardb['profCheck'].keys():
-        embed = nextcord.Embed(title="Snipe disabled here due to me not being able to find a way to not let it bypass the profanity check")
+      if str(servid) in list(vardb['profCheck'].keys()):
+        embed = nextcord.Embed(title="Snipe disabled due to conflicts with profanity check")
         await ctx.send(embed=embed)
         return
-      
       try:
         before = editdb[chanid]['before']
         after = editdb[chanid]['after']
@@ -228,6 +233,8 @@ class funcmds(commands.Cog):
         return
       if len(message.content) < 2:
         return
+      if str(message.guild.id) in list(vardb['profCheck'].keys()):
+        return
       author = message.author.mention
       chanid = message.channel.id
       content = message.content
@@ -244,6 +251,8 @@ class funcmds(commands.Cog):
       if before.author.bot == True:
         return
       if before.author.id == self.client.user.id:
+        return
+      if str(before.guild.id) in list(vardb['profCheck'].keys()):
         return
       chanid = before.channel.id
       author = before.author.mention

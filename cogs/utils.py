@@ -24,34 +24,50 @@ class utils(commands.Cog):
         self.client = client
 
     @commands.command(pass_context=True) # load unload cogs for debugging purposes
-    async def sudo(self,ctx,arg1=None,arg2=None):
+    async def sudo(self,ctx,*arg):
         if ctx.message.author.id != vardb["owner_id"]:
             await ctx.send("Access Denied")
             return
-        if arg1 == "reload_cog":
-            try:
-                cog = "cogs."+arg2
-                self.client.reload_extension(cog) 
-                await ctx.send("Reloaded "+arg2+"!")
-            except Exception as e:
-                await ctx.send("Error: "+str(e))
-        elif arg1 == "unload_cog":
-            try:
-                cog = "cogs."+arg2
-                self.client.unload_extension(cog)
-                await ctx.send("Unloaded "+arg2+"!")
-            except Exception as e:
-                await ctx.send("Error: "+str(e))
-        elif arg1 == "load_cog":
-            try:
-                cog = "cogs."+arg2
-                self.client.load_extension(cog)
-                await ctx.send("Loaded "+arg2+"!")
-            except Exception as e:
-                await ctx.send("Error: "+str(e))
-        else:
-            await ctx.send("Usage: sudo <command> <arg>, where command is one of: reload_cog, unload_cog, load_cog")
-
+        if arg[0] == "cog":
+            if arg[1] == "reload":
+                try:
+                    cog = "cogs."+arg[2]
+                    self.client.reload_extension(cog) 
+                    await ctx.send("Reloaded `"+arg[2]+"` Successfully")
+                except Exception as e:
+                    await ctx.send("Error: "+str(e))
+            elif arg[1] == "unload":
+                try:
+                    cog = "cogs."+arg[2]
+                    self.client.unload_extension(cog)
+                    await ctx.send("Unloaded `"+arg[2]+"` Successfully")
+                except Exception as e:
+                    await ctx.send("Error: "+str(e))
+            elif arg[1] == "load":
+                try:
+                    cog = "cogs."+arg[2]
+                    self.client.load_extension(cog)
+                    await ctx.send("Loaded `"+arg[2]+"` Successfully")
+                except Exception as e:
+                    await ctx.send("Error: "+str(e))
+            else:
+                await ctx.send("Usage: sudo cog <command> <arg>, where command is one of: reload, unload, load")
+        elif arg[0] == "profcheck":
+            if arg[1].lower() in ["add","enable","on"]:
+                # todo
+                return
+            elif arg[1].lower() in ["remove","disable","off"]:
+                # todo
+                return
+            else:
+                ctx.send("Usage: sudo profcheck <arg>, where command is one of: add, remove")
+                return
+        else :
+            await ctx.send("Usage: sudo <command>, where command is one of: cog, profcheck")
+            return
+            
+            
+            
     @commands.command(pass_context=True) # purge command for deleting messages
     @commands.has_permissions(administrator=True)
     async def purge(self, ctx, limit:int):
@@ -61,7 +77,7 @@ class utils(commands.Cog):
         except:
             await ctx.send('Unknown Error, perhaps check permissions?')
 
-    # @nextcord.slash_command(
+    # @nextcord.slash_command( # Dpy api doesnt have a proper permission system for slash commands
     #     name="purge",
     #     description="Purge chat content",
     #     default_permission=False

@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-from importlib import import_module
 import nextcord,json
 from os import listdir
 from nextcord.ext import commands
+from tinydb import TinyDB
 
 vardb = json.load(open("settings.json"))
 client = commands.Bot(command_prefix=commands.when_mentioned_or(vardb["prefix"]), intents=nextcord.Intents.all())

@@ -1,5 +1,0 @@
-import discord
-import nextcord
-
-
-    
