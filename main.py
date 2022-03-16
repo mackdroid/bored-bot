@@ -14,12 +14,15 @@ def main():
         if cog.endswith('.py'):
             cog = cog[:-3]
             print ("Found "+cog+", Loading..")
-            try:
-                mod = "cogs."+cog
-                client.load_extension(mod)
-                print("Loaded "+cog)
-            except Exception as e:
-                print("Error loading "+cog+": "+str(e))
+            # try:
+            #     mod = "cogs."+cog
+            #     client.load_extension(mod)
+            #     print("Loaded "+cog)
+            # except Exception as e:
+            #     print("Error loading "+cog+": "+str(e))
+            mod = "cogs."+cog
+            client.load_extension(mod)
+            print("Loaded "+cog)
         else:
             print("Found file "+cog+", but it does not seem to be a cog.")
     print("Cogs sucessfully loaded")

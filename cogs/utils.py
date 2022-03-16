@@ -11,7 +11,6 @@ from nextcord import Interaction, SlashOption
 from nextcord.ext import commands
 from profanity_check import predict_prob # for profanity filter
 
-
 # import settings from settings.json
 vardb = json.load(open("settings.json"))
 
@@ -66,8 +65,6 @@ class utils(commands.Cog):
             await ctx.send("Usage: sudo <command>, where command is one of: cog, profcheck")
             return
             
-            
-            
     @commands.command(pass_context=True) # purge command for deleting messages
     @commands.has_permissions(administrator=True)
     async def purge(self, ctx, limit:int):
@@ -77,7 +74,7 @@ class utils(commands.Cog):
         except:
             await ctx.send('Unknown Error, perhaps check permissions?')
 
-    # @nextcord.slash_command( # Dpy api doesnt have a proper permission system for slash commands
+    # @nextcord.slash_command( # Discord api doesnt have a proper permission system for slash commands
     #     name="purge",
     #     description="Purge chat content",
     #     default_permission=False
@@ -136,7 +133,7 @@ class utils(commands.Cog):
         await interaction.response.send_message(embed=embed) # reply with embed
         ping = round(self.client.latency*1000)
         embed.set_footer(text=f"{ping} ms")
-        await interaction.edit_original_message(embed=embed) # edit embed with latency
+        await interaction.edit_original_message(embed=embed) # edit embed with latency for fancyness
 
     @commands.Cog.listener()
     async def on_message(self, message):
