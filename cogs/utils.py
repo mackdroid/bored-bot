@@ -88,7 +88,7 @@ class utils(commands.Cog):
             arr[len(arr) - 1] = "return " + arr[::-1][0]
         return "".join(f"\n\t{i}" for i in arr)
     
-    @commands.command(pass_context=True, aliases=['eval', 'exec', 'evaluate'])
+    @commands.command()
     async def eval(self, ctx, *, code: str):
         if ctx.message.author.id != vardb["owner_id"]:
             await ctx.send("Access Denied")
