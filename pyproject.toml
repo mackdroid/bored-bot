@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "bored-bot"
 version = "0.1.0"
-description = "A bot that does stuff awfully"
+description = "A bot that does stuff, awfully"
 authors = ["mackdroid <68280146+mackdroid@users.noreply.github.com>"]
 
 [tool.poetry.dependencies]
