@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "bored-bot"
 version = "0.1.0"
-description = "A bot that does stuff awfully"
+description = "A bot that does stuff, awfully"
 authors = ["mackdroid <68280146+mackdroid@users.noreply.github.com>"]
 
 [tool.poetry.dependencies]
@@ -13,6 +13,8 @@ asyncio = "^3.4.3"
 youtube_dl = "^2021.12.17"
 nextcord = "^2.0.0-alpha.6"
 Pillow = "^9.0.1"
+tinydb = "^4.6.1"
+nextcord-ext-menus = "^1.5.2"
 
 [tool.poetry.dev-dependencies]
 

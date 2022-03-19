@@ -1,31 +1,40 @@
 #!/usr/bin/env python
-from importlib import import_module
-import nextcord,json
+import json
 from os import listdir
+
+import nextcord
 from nextcord.ext import commands
 
-vardb = json.load(open("settings.json"))
-client = commands.Bot(command_prefix=commands.when_mentioned_or(vardb["prefix"]), intents=nextcord.Intents.all())
+settingsdb = json.load(open("settings.json"))
+client = commands.Bot(command_prefix=commands.when_mentioned_or(settingsdb["prefix"]), intents=nextcord.Intents.all())
 
-print("Loading Cogs")
-for cog in listdir('cogs'):
-    if cog.endswith('.py'):
-        cog = cog[:-3]
-        print ("Found "+cog+", Loading..")
-        try:
-            mod = "cogs."+cog
+
+def main():
+    print("Loading cogs...")
+    cog_dir = listdir('cogs')
+    for cog in cog_dir:
+        if cog.endswith('.py'):
+            cog = cog[:-3]
+            print("Found " + cog + ", Loading..")
+            # try:
+            #     mod = "cogs."+cog
+            #     client.load_extension(mod)
+            #     print("Loaded "+cog)
+            # except Exception as e:
+            #     print("Error loading "+cog+": "+str(e))
+            mod = "cogs." + cog
             client.load_extension(mod)
-            print("Loaded "+cog)
-        except Exception as e:
-            print("Error loading "+cog+": "+str(e))
-    else:
-        print("Found file "+cog+", but it does not seem to be a cog.")
+            print("Loaded " + cog)
+        else:
+            print("Found file " + cog + ", but it does not seem to be a cog.")
+    print("Cogs successfully loaded")
 
-print("Cogs sucessfully loaded")
 
 @client.event
 async def on_ready():
     print(f'We havelogged in as {client.user}')
 
 
-client.run(vardb["disc_token"])
+if __name__ == '__main__':
+    main()
+    client.run(settingsdb["token"])
