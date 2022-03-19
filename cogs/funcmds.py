@@ -14,8 +14,7 @@ from nextcord import Interaction, SlashOption
 from nextcord.ext import commands
 
 # import settings from settings.json
-vardb = json.load(open("settings.json"))
-
+settingsdb = json.load(open("settings.json"))
 snipedb = {}
 editdb = {}
 
@@ -26,7 +25,7 @@ def setup(client):
 
 
 # setup dpfx for easy access to prefix
-dpfx = vardb["prefix"]
+dpfx = settingsdb["prefix"]
 
 
 # resize image to 1x1 pixels and return colour as hex
@@ -264,7 +263,7 @@ class funcmds(commands.Cog):
     async def snipe(self, ctx):
         chanid = ctx.message.channel.id
         servid = ctx.message.guild.id
-        if str(servid) in list(vardb['profCheck'].keys()):
+        if str(servid) in list(settingsdb['profCheck'].keys()):
             embed = nc.Embed(title="Snipe disabled due to conflicts with profanity check")
             return await ctx.send(embed=embed)
         try:
@@ -287,7 +286,7 @@ class funcmds(commands.Cog):
     async def editsnipe(self, ctx):
         chanid = ctx.message.channel.id
         servid = ctx.message.guild.id
-        if str(servid) in list(vardb['profCheck'].keys()):
+        if str(servid) in list(settingsdb['profCheck'].keys()):
             embed = nc.Embed(title="Snipe disabled due to conflicts with profanity check")
             await ctx.send(embed=embed)
             return
@@ -320,7 +319,7 @@ class funcmds(commands.Cog):
             return
         if len(message.content) < 2:
             return
-        if str(message.guild.id) in list(vardb['profCheck'].keys()):
+        if str(message.guild.id) in list(settingsdb['profCheck'].keys()):
             return
         chanid = message.channel.id
         if chanid not in snipedb.keys():
@@ -337,7 +336,7 @@ class funcmds(commands.Cog):
             return
         if before.author.id == self.client.user.id:
             return
-        if str(before.guild.id) in list(vardb['profCheck'].keys()):
+        if str(before.guild.id) in list(settingsdb['profCheck'].keys()):
             return
         chanid = before.channel.id
         dict = {'before': before, 'after': after}
