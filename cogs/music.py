@@ -15,16 +15,16 @@ from youtube_dl import YoutubeDL
 # initialize queue
 songqueue = {}
 colors = {
-    "error" : 0xf54257,
-    "success" : 0x6cf257,
-    "neutral" : 0x43ccc3,
+    "error": 0xf54257,
+    "success": 0x6cf257,
+    "neutral": 0x43ccc3,
     "spotify": 0x1db954,
     "youtube": 0xc4302b,
     "apple": 0xfc3c44,
-    "other" : 0xeba434
+    "other": 0xeba434
 }
 
-youtube_dl.utils.bug_reports_message = lambda: '' # supress errors
+youtube_dl.utils.bug_reports_message = lambda: ''  # supress errors
 
 # set up youtube_dl
 ytdlOpts = {
@@ -37,6 +37,7 @@ ffmpegOpts = {
     'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5 -reconnect_on_network_error 1',
     'options': '-vn'}
 
+
 # setup
 def setup(client):
     voices = client.voice_clients
@@ -46,9 +47,10 @@ def setup(client):
             client.loop.create_task(voice.disconnect())
     client.add_cog(music(client))
 
+
 class QUEUE():
-    def now_playing(self,ctx):
-        guild_id=ctx.guild.id
+    def now_playing(self, ctx):
+        guild_id = ctx.guild.id
         if ctx.guild.id not in songqueue.keys():
             songqueue[guild_id] = []
         voice = ctx.channel.guild.voice_client
@@ -57,8 +59,8 @@ class QUEUE():
         if voice.is_playing():
             return songqueue[guild_id][0]
 
-    def get_current_song(self,ctx):
-        guild_id=ctx.guild.id
+    def get_current_song(self, ctx):
+        guild_id = ctx.guild.id
         if ctx.guild.id not in songqueue.keys():
             songqueue[guild_id] = []
         voice = ctx.channel.guild.voice_client
@@ -66,97 +68,104 @@ class QUEUE():
             return None
         return songqueue[guild_id][0]
 
-    def next(self,ctx):
-        guild_id=ctx.guild.id
+    def next(self, ctx):
+        guild_id = ctx.guild.id
         if len(songqueue[guild_id]) > 1:
             songqueue[guild_id].pop(0)
             return songqueue[guild_id][0]
         else:
             songqueue[guild_id] = []
             return None
-    
-    def clear(self,ctx):
-        guild_id=ctx.guild.id
+
+    def clear(self, ctx):
+        guild_id = ctx.guild.id
         songqueue[guild_id] = []
         return None
-    
-    def args_to_url(self,ctx,args): # convert parse search query to ytdl urls
+
+    def args_to_url(self, ctx, args):  # convert parse search query to ytdl urls
         if type(args) is tuple:
             args = " ".join(args)
         with YoutubeDL(ytdlOpts) as ytdl:
             if args.find("https://") != -1 or args.find("http://") != -1:
                 if args.find("https://www.youtube.com") != -1 or args.find("https://youtu.be") != -1:
                     src = "youtube"
-                    ytdlData = ytdl.extract_info(args, download=False)
-                    title = ytdlData['title']
-                    url = ytdlData['formats'][1]['url']
-                    thumb = ytdlData['thumbnail']
-                    return url,src,thumb,title   
+                    ytdl_data = ytdl.extract_info(args, download=False)
+                    title = ytdl_data['title']
+                    url = ytdl_data['formats'][1]['url']
+                    thumb = ytdl_data['thumbnail']
+                    return url, src, thumb, title
                 else:
-                    args = args.replace(" ","")
+                    args = args.replace(" ", "")
                     if args.find("spotify") != -1:
-                        src="spotify"
+                        src = "spotify"
                     elif args.find("apple") != -1:
-                        src="apple"
+                        src = "apple"
                     else:
-                        src="other"
-                    apiurl = "https://api.song.link/v1-alpha.1/links?url=" + args # scraping odesli website for the youtube equivalent of the link, their api is not open
+                        src = "other"
+                    apiurl = "https://api.song.link/v1-alpha.1/links?url=" + args  # scraping odesli website for the
+                    # youtube equivalent of the link, their api is not open
                     response = json.loads(requests.get(apiurl).text)
                     song_title = response["entitiesByUniqueId"][response["entityUniqueId"]]["title"]
                     song_artist = response["entitiesByUniqueId"][response["entityUniqueId"]]["artistName"]
                     thumb = response["entitiesByUniqueId"][response["entityUniqueId"]]["thumbnailUrl"]
-                    yturl= response["linksByPlatform"]["youtube"]["url"]
-                    ytdlData = ytdl.extract_info(yturl, download=False) # search for the song from youtube
-                    url = ytdlData['formats'][1]['url']
-                    return url,src,thumb,song_title+" by "+song_artist # return the url, source, thumbnail, and song title
+                    yturl = response["linksByPlatform"]["youtube"]["url"]
+                    ytdl_data = ytdl.extract_info(yturl, download=False)  # search for the song from youtube
+                    url = ytdl_data['formats'][1]['url']
+                    return url, src, thumb, song_title + " by " + song_artist  # return the url, source, thumbnail,
+                    # and song title
             else:
                 src = "youtube"
-                ytdlData = ytdl.extract_info(f"ytsearch:{args}", download=False) # search for the song from youtube using youtube-dl 
-                title = ytdlData['entries'][0]['title']
-                url = ytdlData['entries'][0]['formats'][1]['url']
-                thumb = ytdlData['entries'][0]['thumbnail']
-                return url,src,thumb,title # return the url, source, thumbnail, and song title
+                ytdl_data = ytdl.extract_info(f"ytsearch:{args}",
+                                              download=False)  # search for the song from youtube using youtube-dl
+                title = ytdl_data['entries'][0]['title']
+                url = ytdl_data['entries'][0]['formats'][1]['url']
+                thumb = ytdl_data['entries'][0]['thumbnail']
+                return url, src, thumb, title  # return the url, source, thumbnail, and song title
 
-    def add(self,ctx,arg):
+    def add(self, ctx, arg):
         if ctx.guild.id not in songqueue.keys():
             songqueue[ctx.guild.id] = []
-        url,src,thumb,title = self.args_to_url(ctx,arg)
-        songqueue[ctx.guild.id].append([url,src,thumb,title,ctx])
-        return url,src,thumb,title,ctx
+        url, src, thumb, title = self.args_to_url(ctx, arg)
+        songqueue[ctx.guild.id].append([url, src, thumb, title, ctx])
+        return url, src, thumb, title, ctx
 
-    def remove(self,ctx,id):
+    def remove(self, ctx, id):
         if ctx.guild.id not in songqueue.keys():
             songqueue[ctx.guild.id] = []
         songqueue[ctx.guild.id].pop(id)
         return None
-    
-    def clear(self,ctx):
+
+    def clear(self, ctx):
         songqueue[ctx.guild.id] = []
         return None
 
+
+# noinspection PyPep8
 class PLAYER():
-    def __init__(self,client) -> None:
+    def __init__(self, client) -> None:
         self.client = client
-        
-    def player(self,ctx,url):
+
+    # noinspection PyPep8
+    def player(self, ctx, url):
         voice = ctx.channel.guild.voice_client
         guildid = ctx.guild.id
         player = FFmpegOpusAudio(url, **ffmpegOpts)
-        after = lambda err : self.after(guildid,err)
+        # noinspection PyPep8
+        after = lambda err: self.after(guildid, err)
         try:
-            voice.play(player,after=after)
+            voice.play(player, after=after)
         except Exception as e:
             return e
         return
 
-    async def ensure_voice(self,ctx): # check if the bot is in the same voice channel as the user
-        guild_id=ctx.guild.id
+    async def ensure_voice(self, ctx):  # check if the bot is in the same voice channel as the user
+        guild_id = ctx.guild.id
         voice = ctx.channel.guild.voice_client
         authorChannel = ctx.author.voice.channel if ctx.author.voice else None
         if authorChannel is None:
-            embed = nc.Embed(title="You must be in a voice channel to use this.",color=colors["error"])
+            embed = nc.Embed(title="You must be in a voice channel to use this.", color=colors["error"])
             await ctx.send(embed=embed)
-        else:    
+        else:
             if guild_id not in songqueue.keys():
                 songqueue[guild_id] = []
             if voice is None:
@@ -165,102 +174,116 @@ class PLAYER():
                 await ctx.send(embed=embed)
             elif ctx.author.voice.channel is not voice.channel:
                 await voice.move_to(ctx.author.voice.channel)
-                embed = nc.Embed(title="Inconsistency in bot's channel, Moved to your voice channel.", color=colors["neutral"])
+                embed = nc.Embed(title="Inconsistency in bot's channel, Moved to your voice channel.",
+                                 color=colors["neutral"])
                 await ctx.send(embed=embed)
-            await ctx.guild.change_voice_state(channel=ctx.author.voice.channel, self_mute=False, self_deaf=True)    
+            await ctx.guild.change_voice_state(channel=ctx.author.voice.channel, self_mute=False, self_deaf=True)
 
-    def after(self,guildid,err):
+    def after(self, guildid, err):
         ctx = songqueue[guildid][0][4]
         nxt = QUEUE().next(ctx)
         if nxt is None:
-            coro = ctx.send(embed=nc.Embed(title="Song ended.",description="Queue is empty cannot proceed, add songs using the play/add command",color=colors["success"]))
+            coro = ctx.send(embed=nc.Embed(title="Song ended.",
+                                           description="Queue is empty cannot proceed, add songs using the play/add command",
+                                           color=colors["success"]))
         else:
-            url,src,title = nxt[0],nxt[1],nxt[3]
-            coro = ctx.send(embed=nc.Embed(title="Playing Next",description="**"+title+"**",color=colors[src]))
+            url, src, title = nxt[0], nxt[1], nxt[3]
+            coro = ctx.send(embed=nc.Embed(title="Playing Next", description="**" + title + "**", color=colors[src]))
         fut = asyncio.run_coroutine_threadsafe(coro, self.client.loop)
         if nxt is not None:
-            self.player(ctx,url)
+            self.player(ctx, url)
         try:
             fut.result()
         except Exception as e:
             print(e)
             pass
-        
-    async def play(self,ctx,arg): # play a song
+
+    async def play(self, ctx, arg):  # play a song
         if arg == ():
-                embed = nc.Embed(title="Please enter a search query.",description="Most music streamings site links are accepted, if otherwise query terms will be considered as youtube search terms",color=0xf54257)
-                await ctx.send(embed=embed)
-                return
+            embed = nc.Embed(title="Please enter a search query.",
+                             description="Most music streamings site links are accepted, if otherwise query terms will be considered as youtube search terms",
+                             color=0xf54257)
+            await ctx.send(embed=embed)
+            return
         await self.ensure_voice(ctx)
         guild_id = ctx.guild.id
         voice = ctx.channel.guild.voice_client
         if guild_id not in songqueue.keys():
             songqueue[guild_id] = []
         if voice.is_playing():
-            embed = nc.Embed(title="Song already playing, adding to Queue",color=colors["neutral"])
+            embed = nc.Embed(title="Song already playing, adding to Queue", color=colors["neutral"])
             message = await ctx.send(embed=embed)
             try:
-                url,src,thumb,title,ctx = QUEUE().add(ctx,arg)
-                embed = nc.Embed(title="Song already playing, added to Queue",description="**"+title+"**",color=colors[src])
+                url, src, thumb, title, ctx = QUEUE().add(ctx, arg)
+                embed = nc.Embed(title="Song already playing, added to Queue", description="**" + title + "**",
+                                 color=colors[src])
                 embed.set_thumbnail(url=thumb)
                 await message.edit(embed=embed)
             except Exception as e:
-                embed = nc.Embed(title="Tried to add to queue but an error occured",description="Error:"+str(e),color=colors["error"])
+                embed = nc.Embed(title="Tried to add to queue but an error occured", description="Error:" + str(e),
+                                 color=colors["error"])
                 await message.edit(embed=embed)
             return
-        QUEUE().add(ctx,arg)
+        QUEUE().add(ctx, arg)
         song = QUEUE().get_current_song(ctx)
         try:
-            url,src,thumb = song[0],song[1],song[2]
+            url, src, thumb = song[0], song[1], song[2]
             self.player(ctx, url)
-            embed = nc.Embed(title=f"Now Playing: {song[3]}",description=f"Source: {song[1]}",color=colors[src])
+            embed = nc.Embed(title=f"Now Playing: {song[3]}", description=f"Source: {song[1]}", color=colors[src])
             embed.set_thumbnail(url=thumb)
             await ctx.send(embed=embed)
         except Exception as e:
-            embed = nc.Embed(title="An Error Occured",description=e,color=colors["error"])
+            embed = nc.Embed(title="An Error Occured", description=e, color=colors["error"])
             await ctx.send(embed=embed)
             voice.stop()
             nxt = QUEUE().next(ctx)
             if nxt is None:
-                ctx.send(embed=nc.Embed(title="Skipped song.",description="Queue is empty cannot proceed, add songs using the play/add command",color=colors["success"]))
+                ctx.send(embed=nc.Embed(title="Skipped song.",
+                                        description="Queue is empty cannot proceed, add songs using the play/add command",
+                                        color=colors["success"]))
             else:
-                url,src,title = nxt[0],nxt[1],nxt[3]
-                ctx.send(embed=nc.Embed(title="Skipped song, Playing Next",description="**"+title+"**",color=colors[src]))
-        
-    async def skip(self,ctx,position:int): # skip a song
+                url, src, title = nxt[0], nxt[1], nxt[3]
+                ctx.send(embed=nc.Embed(title="Skipped song, Playing Next", description="**" + title + "**",
+                                        color=colors[src]))
+
+    async def skip(self, ctx, position: int = None):  # skip a song
         await self.ensure_voice(ctx)
         voice = ctx.channel.guild.voice_client
         try:
             voice.stop()
             nxt = QUEUE().next(ctx)
-            if nxt is None:  
-                await ctx.send(embed=nc.Embed(title="Skipped song.",description="Queue is empty cannot proceed, add songs using the play/add command",color=colors["success"]))
+            if nxt is None:
+                await ctx.send(embed=nc.Embed(title="Skipped song.",
+                                              description="Queue is empty cannot proceed, add songs using the play/add command",
+                                              color=colors["success"]))
             else:
-                url,src,title = nxt[0],nxt[1],nxt[3]
-                await ctx.send(embed=nc.Embed(title="Skipped song, Playing Next",description="**"+title+"**",color=colors[src]))
-                self.player(ctx,url)
+                url, src, title = nxt[0], nxt[1], nxt[3]
+                await ctx.send(embed=nc.Embed(title="Skipped song, Playing Next", description="**" + title + "**",
+                                              color=colors[src]))
+                self.player(ctx, url)
         except Exception as e:
-            ctx.send(embed=nc.Embed(title="An Error Occured whilist trying to skip song",description=e,color=colors["error"]))
+            ctx.send(embed=nc.Embed(title="An Error Occured whilist trying to skip song", description=e,
+                                    color=colors["error"]))
             return
-        
+
 
 class music(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.p = PLAYER(self.client)
-    @commands.command(name="play",aliases=["p","add","a"]) # play command
-    async def command_play(self,ctx,*arg):
-        
-        await self.p.play(ctx,arg)
 
-    @commands.command(name="queue",aliases=["q","list","l"]) # list the queue
-    async def command_queue(self,ctx):
-        guild_id=ctx.guild.id
+    @commands.command(name="play", aliases=["p", "add", "a"])  # play command
+    async def command_play(self, ctx, *arg):
+        await self.p.play(ctx, arg)
+
+    @commands.command(name="queue", aliases=["q", "list", "l"])  # list the queue
+    async def command_queue(self, ctx):
+        guild_id = ctx.guild.id
         if guild_id not in songqueue.keys():
-                songqueue[guild_id] = []
+            songqueue[guild_id] = []
         np = QUEUE().now_playing(ctx)
         if np != None:
-            description = "**Now playing:** "+ np[3]
+            description = "**Now playing:** " + np[3]
         else:
             description = ""
         embed = nc.Embed(title="Song Queue", description=description, color=colors["neutral"])
@@ -269,25 +292,27 @@ class music(commands.Cog):
                 if i == songqueue[guild_id][0]:
                     continue
                 id = songqueue[guild_id].index(i)
-                embed.add_field(name=str(id)+". "+i[3], value=f"`Position {id}`",inline=False)
+                embed.add_field(name=str(id) + ". " + i[3], value=f"`Position {id}`", inline=False)
         else:
-            embed.add_field(name="No songs in queue", value="songs are added automatically to queue when there is already a song playing",inline=False)
+            embed.add_field(name="No songs in queue",
+                            value="songs are added automatically to queue when there is already a song playing",
+                            inline=False)
         await ctx.send(embed=embed)
 
-    @commands.command(name="skip",aliases=["s","next"]) # skip the current song
-    async def command_skip(self,ctx):
+    @commands.command(name="skip", aliases=["s", "next"])  # skip the current song
+    async def command_skip(self, ctx):
         await self.p.skip(ctx)
 
-    @commands.command(name="join",aliases=["j","connect","c"])
-    async def command_join(self,ctx):
+    @commands.command(name="join", aliases=["j", "connect", "c"])
+    async def command_join(self, ctx):
         await self.p.ensure_voice(ctx)
-        
+
     @commands.command()
-    async def dump(self,ctx):
+    async def dump(self, ctx):
         ctx.send(songqueue)
 
-    @commands.command(name="stop",aliases=["st","end","fuckoff"]) # stop the bot from playing music
-    async def command_stop(self,ctx):
+    @commands.command(name="stop", aliases=["st", "end", "fuckoff"])  # stop the bot from playing music
+    async def command_stop(self, ctx):
         voice = ctx.channel.guild.voice_client
         if voice is not None:
             QUEUE().clear(ctx)
@@ -298,7 +323,8 @@ class music(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.Cog.listener()
-    async def on_voice_state_update(self, member, before, after): # checks if there are more than one person in the voice channel or else leaves
+    async def on_voice_state_update(self, member, before,
+                                    after):  # checks if there are more than one person in the voice channel or else leaves
         if member.id == self.client.user.id:
             return
         voice = nc.utils.get(self.client.voice_clients, guild=member.guild)
@@ -313,6 +339,6 @@ class music(commands.Cog):
                 guildid = member.guild.id
                 ctx = songqueue[guildid][0][4]
                 QUEUE().clear(ctx)
-                embed = nc.Embed(title="Left voice channel, and cleared queue", description="No one else in the voice channel :/", color=colors["neutral"])
+                embed = nc.Embed(title="Left voice channel, and cleared queue",
+                                 description="No one else in the voice channel :/", color=colors["neutral"])
                 await ctx.send(embed=embed)
-                
