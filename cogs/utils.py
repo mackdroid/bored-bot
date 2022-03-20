@@ -3,7 +3,6 @@ if __name__ == "__main__":
     exit()
 
 # supress sklearn's annoying warnings
-from http import client
 import warnings
 
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -110,7 +109,7 @@ class utils(commands.Cog):
             "imp": __import__,
             "this": self,
             "ctx": ctx,
-            "client": client
+            "client": self.client
         }
 
         try:
