@@ -348,10 +348,10 @@ class funcmds(commands.Cog):
         if str(before.guild.id) in list(settingsdb['profCheck'].keys()):
             return
         chanid = before.channel.id
-        dict = {'before': before, 'after': after}
+        dat = {'before': before, 'after': after}
         if chanid not in editdb.keys():
             editdb[chanid] = []
-        print("editdb: " + str(dict))
-        editdb[chanid].insert(0, dict)
+        print("editdb: " + str(dat))
+        editdb[chanid].insert(0, dat)
         if len(editdb[chanid]) > 5:
             editdb[chanid].pop(5)

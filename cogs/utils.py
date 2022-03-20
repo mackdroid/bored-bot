@@ -2,7 +2,8 @@ if __name__ == "__main__":
     print("This is a cog, execute main.py!")
     exit()
 
-# supress sklearns annoying warnings
+# supress sklearn's annoying warnings
+from http import client
 import warnings
 
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -72,7 +73,7 @@ class utils(commands.Cog):
             return
 
     # Eval Helpers
-    # Code shamelessly stolen from https://gist.github.com/vierofernando/c5796a78292b949341c98a5deaee8eda since my pea brain cant comprehend this stuff
+    # Code shamelessly stolen from https://gist.github.com/vierofernando/c5796a78292b949341c98a5deaee8eda since my pea brain can't comprehend this stuff
 
     def resolve_variable(self, variable):
         if hasattr(variable, "__iter__"):
@@ -108,7 +109,8 @@ class utils(commands.Cog):
             "os": os,
             "imp": __import__,
             "this": self,
-            "ctx": ctx
+            "ctx": ctx,
+            "client": client
         }
 
         try:
