@@ -143,7 +143,7 @@ class funcmds(commands.Cog):
             suffix = "thats a unknown category, heres a cat instead!"
             apiurl = "https://api.thecatapi.com/v1/images/search"
         if ishelp == False:  # check if category is help, if yes get gif from the set apiurl
-            if (apiurl.find('waifu') != -1):
+            if apiurl.find('waifu') != -1:
                 url = json.loads(requests.get(apiurl).text)["url"]
             else:
                 url = json.loads(requests.get(apiurl).text)[0]["url"]

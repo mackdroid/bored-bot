@@ -15,3 +15,6 @@ class rand(commands.Cog):
         if message.content == "is gaeeeeeeeeeee":
             await message.delete()
             return
+        if "ur mum" in message.content:
+            await message.delete()
+                     return
