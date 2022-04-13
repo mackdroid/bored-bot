@@ -101,8 +101,7 @@ class QUEUE():
                         src = "apple"
                     else:
                         src = "other"
-                    apiurl = "https://api.song.link/v1-alpha.1/links?url=" + args  # scraping odesli website for the
-                    # youtube equivalent of the link, their api is not open
+                    apiurl = "https://api.song.link/v1-alpha.1/links?url=" + args # get youtube equiv link from the odesli api
                     response = json.loads(requests.get(apiurl).text)
                     song_title = response["entitiesByUniqueId"][response["entityUniqueId"]]["title"]
                     song_artist = response["entitiesByUniqueId"][response["entityUniqueId"]]["artistName"]
