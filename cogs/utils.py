@@ -15,9 +15,9 @@ from nextcord import Interaction, SlashOption
 from nextcord.ext import commands
 from profanity_check import predict_prob  # for profanity filter
 
-# import settings from settings.json
+# import settings from settings.json and other variables
 vardb = json.load(open("settings.json"))
-
+whitelisted_ids = vardb["profCheck"].keys()  # get whitelisted ids
 
 # setup
 def setup(client):
@@ -204,11 +204,10 @@ class utils(commands.Cog):
     async def on_message(self, message):
         if message.author == self.client.user:  # if message is from bot ignore
             return
-        whitelisted_ids = vardb["profCheck"].keys()  # get whitelisted ids
-        if str(message.guild.id) in whitelisted_ids and "damn" not in message.content:  # check if guild is whitelisted
+        if str(message.guild.id) in whitelisted_ids:  # check if guild is whitelisted
             msg_predict_prob = predict_prob([str(message.content)])[0] * 100
             # await message.channel.send("this message has a probability of " + str(msg_predict_prob)+ "% , containing profanity")
-            if int(msg_predict_prob) > 82:  # if message contains profanity
+            if int(msg_predict_prob) > 90:  # if message contains profanity
                 await message.delete()
                 channel = self.client.get_channel(vardb["profCheck"][str(message.guild.id)])  # get log channel
                 if channel is not None:

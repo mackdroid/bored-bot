@@ -20,6 +20,7 @@ colors = {
     "neutral": 0x43ccc3,
     "spotify": 0x1db954,
     "youtube": 0xc4302b,
+    "fallback": 0xc7979,
     "apple": 0xfc3c44,
     "other": 0xeba434
 }
@@ -101,21 +102,23 @@ class QUEUE():
                         src = "apple"
                     else:
                         src = "other"
-                    apiurl = "https://api.song.link/v1-alpha.1/links?url=" + args  # scraping odesli website for the
-                    # youtube equivalent of the link, their api is not open
-                    response = json.loads(requests.get(apiurl).text)
-                    song_title = response["entitiesByUniqueId"][response["entityUniqueId"]]["title"]
-                    song_artist = response["entitiesByUniqueId"][response["entityUniqueId"]]["artistName"]
-                    thumb = response["entitiesByUniqueId"][response["entityUniqueId"]]["thumbnailUrl"]
-                    yturl = response["linksByPlatform"]["youtube"]["url"]
-                    ytdl_data = ytdl.extract_info(yturl, download=False)  # search for the song from youtube
-                    url = ytdl_data['formats'][1]['url']
-                    return url, src, thumb, song_title + " by " + song_artist  # return the url, source, thumbnail,
-                    # and song title
+                    apiurl = "https://api.song.link/v1-alpha.1/links?url=" + args  # using odesli for getting youtube link
+                    try:
+                        response = json.loads(requests.get(apiurl).text)
+                        song_title = response["entitiesByUniqueId"][response["entityUniqueId"]]["title"]
+                        song_artist = response["entitiesByUniqueId"][response["entityUniqueId"]]["artistName"]
+                        thumb = response["entitiesByUniqueId"][response["entityUniqueId"]]["thumbnailUrl"]
+                        yturl = response["linksByPlatform"]["youtube"]["url"]
+                        ytdl_data = ytdl.extract_info(yturl, download=False)  # search for the song from youtube
+                        url = ytdl_data['formats'][1]['url']
+                        title = song_title + " by " + song_artist
+                        return url, src, thumb, title  # return the url, source, thumbnail, and song title
+                    except:
+                        return ()
+      
             else:
                 src = "youtube"
-                ytdl_data = ytdl.extract_info(f"ytsearch:{args}",
-                                              download=False)  # search for the song from youtube using youtube-dl
+                ytdl_data = ytdl.extract_info(f"ytsearch:{args}", download=False)  # search for the song from youtube using youtube-dl
                 title = ytdl_data['entries'][0]['title']
                 url = ytdl_data['entries'][0]['formats'][1]['url']
                 thumb = ytdl_data['entries'][0]['thumbnail']
@@ -124,9 +127,14 @@ class QUEUE():
     def add(self, ctx, arg):
         if ctx.guild.id not in songqueue.keys():
             songqueue[ctx.guild.id] = []
-        url, src, thumb, title = self.args_to_url(ctx, arg)
-        songqueue[ctx.guild.id].append([url, src, thumb, title, ctx])
-        return url, src, thumb, title, ctx
+        lst = self.args_to_url(ctx, arg)
+        if lst != ():
+            url, src, thumb, title = lst 
+            songqueue[ctx.guild.id].append([url, src, thumb, title, ctx])
+            return url, src, thumb, title, ctx
+        else:
+            raise Exception("Song wasn't found.")
+        
 
     def remove(self, ctx, id):
         if ctx.guild.id not in songqueue.keys():
@@ -138,18 +146,14 @@ class QUEUE():
         songqueue[ctx.guild.id] = []
         return None
 
-
-# noinspection PyPep8
 class PLAYER():
     def __init__(self, client) -> None:
         self.client = client
 
-    # noinspection PyPep8
     def player(self, ctx, url):
         voice = ctx.channel.guild.voice_client
         guildid = ctx.guild.id
         player = FFmpegOpusAudio(url, **ffmpegOpts)
-        # noinspection PyPep8
         after = lambda err: self.after(guildid, err)
         try:
             voice.play(player, after=after)
@@ -164,6 +168,7 @@ class PLAYER():
         if authorChannel is None:
             embed = nc.Embed(title="You must be in a voice channel to use this.", color=colors["error"])
             await ctx.send(embed=embed)
+            return False
         else:
             if guild_id not in songqueue.keys():
                 songqueue[guild_id] = []
@@ -177,7 +182,8 @@ class PLAYER():
                                  color=colors["neutral"])
                 await ctx.send(embed=embed)
             await ctx.guild.change_voice_state(channel=ctx.author.voice.channel, self_mute=False, self_deaf=True)
-
+            return True
+        
     def after(self, guildid, err):
         ctx = songqueue[guildid][0][4]
         nxt = QUEUE().next(ctx)
@@ -204,7 +210,9 @@ class PLAYER():
                              color=0xf54257)
             await ctx.send(embed=embed)
             return
-        await self.ensure_voice(ctx)
+        check = await self.ensure_voice(ctx)
+        if check is False:
+            return
         guild_id = ctx.guild.id
         voice = ctx.channel.guild.voice_client
         if guild_id not in songqueue.keys():
@@ -216,37 +224,47 @@ class PLAYER():
                 url, src, thumb, title, ctx = QUEUE().add(ctx, arg)
                 embed = nc.Embed(title="Song already playing, added to Queue", description="**" + title + "**",
                                  color=colors[src])
+                if src != "fallback":
+                    embed.set_footer(text="Powered by odesli & ytdl!")
                 embed.set_thumbnail(url=thumb)
                 await message.edit(embed=embed)
             except Exception as e:
-                embed = nc.Embed(title="Tried to add to queue but an error occured", description="Error:" + str(e),
-                                 color=colors["error"])
+                embed = nc.Embed(title="Unable to play the song, sorry. :(", description=str(e), color=colors["error"])
                 await message.edit(embed=embed)
             return
-        QUEUE().add(ctx, arg)
-        song = QUEUE().get_current_song(ctx)
         try:
-            url, src, thumb = song[0], song[1], song[2]
+            url, src, thumb, title, ctx = QUEUE().add(ctx, arg)
             self.player(ctx, url)
-            embed = nc.Embed(title=f"Now Playing: {song[3]}", description=f"Source: {song[1]}", color=colors[src])
+            embed = nc.Embed(title=f"Now Playing: {title}", color=colors[src])
+            embed.set_footer(text="Powered by odesli & ytdl!")
             embed.set_thumbnail(url=thumb)
             await ctx.send(embed=embed)
         except Exception as e:
-            embed = nc.Embed(title="An Error Occured", description=e, color=colors["error"])
+            embed = nc.Embed(title="Unable to find the song, sorry. :(", description="Error:" + str(e), color=colors["error"])
             await ctx.send(embed=embed)
-            voice.stop()
-            nxt = QUEUE().next(ctx)
-            if nxt is None:
-                ctx.send(embed=nc.Embed(title="Skipped song.",
-                                        description="Queue is empty cannot proceed, add songs using the play/add command",
-                                        color=colors["success"]))
-            else:
-                url, src, title = nxt[0], nxt[1], nxt[3]
-                ctx.send(embed=nc.Embed(title="Skipped song, Playing Next", description="**" + title + "**",
-                                        color=colors[src]))
+            return
+        # song = QUEUE().get_current_song(ctx)
+        # try:
+        #     url, src, thumb = song[0], song[1], song[2]
+            
+        # except Exception as e:
+        #     embed = nc.Embed(title="An Error Occured", description=e, color=colors["error"])
+        #     await ctx.send(embed=embed)
+        #     voice.stop()
+        #     nxt = QUEUE().next(ctx)
+        #     if nxt is None:
+        #         await ctx.send(embed=nc.Embed(title="Skipped song.",
+        #                                 description="Queue is empty cannot proceed, add songs using the play/add command",
+        #                                 color=colors["success"]))
+        #     else:
+        #         url, src, title = nxt[0], nxt[1], nxt[3]
+        #         ctx.send(embed=nc.Embed(title="Skipped song, Playing Next", description="**" + title + "**",
+        #                                 color=colors[src]))
 
     async def skip(self, ctx, position: int = None):  # skip a song
-        await self.ensure_voice(ctx)
+        check = await self.ensure_voice(ctx)
+        if check is False:
+            return
         voice = ctx.channel.guild.voice_client
         try:
             voice.stop()
@@ -264,7 +282,6 @@ class PLAYER():
             ctx.send(embed=nc.Embed(title="An Error Occured whilist trying to skip song", description=e,
                                     color=colors["error"]))
             return
-
 
 class music(commands.Cog):
     def __init__(self, client):
@@ -322,8 +339,7 @@ class music(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.Cog.listener()
-    async def on_voice_state_update(self, member, before,
-                                    after):  # checks if there are more than one person in the voice channel or else leaves
+    async def on_voice_state_update(self, member, before, after):  # checks if there are more than one person in the voice channel or else leaves
         if member.id == self.client.user.id:
             return
         voice = nc.utils.get(self.client.voice_clients, guild=member.guild)

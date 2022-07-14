@@ -28,25 +28,78 @@ def setup(client):
 dpfx = settingsdb["prefix"]
 
 
-# resize image to 1x1 pixels and return colour as hex
-def get_dominant_color(image_url):
-    response = requests.get(image_url)
-    img = Image.open(BytesIO(response.content))
-    # img = img.resize((1, 1), Image.NEAREST) # todo fix this awful shit
-    data = list(img.getdata())
-    rgb = random.choice(data)
-    color = nc.Color.from_rgb(rgb[0], rgb[1], rgb[2])
-    return color
+# # resize image to 1x1 pixels and return colour as hex
+# def get_dominant_color(image_url):
+#     response = requests.get(image_url)
+#     img = Image.open(BytesIO(response.content))
+#     # img = img.resize((1, 1), Image.NEAREST) # todo fix this awful shit
+#     data = list(img.getdata())
+#     rgb = random.choice(data)
+#     color = nc.Color.from_rgb(rgb[0], rgb[1], rgb[2])
+#     return color
+
+gif_lst = {'kick': ['https://i.waifu.pics/FxDWcmZ.gif',
+  'https://i.waifu.pics/wZtL4zy.gif',
+  'https://i.waifu.pics/BZ38S3s.gif',
+  'https://i.waifu.pics/~9t_55m.gif',
+  'https://i.waifu.pics/wZtL4zy.gif',
+  'https://i.waifu.pics/Qjuht_q.gif'],
+ 'happy': ['https://i.waifu.pics/Ck_nyHx.gif',
+  'https://i.waifu.pics/E_tAOv2.gif',
+  'https://i.waifu.pics/Ck_nyHx.gif',
+  'https://i.waifu.pics/M4kkraV.gif',
+  'https://i.waifu.pics/LcFeEJz.gif',
+  'https://i.waifu.pics/7Kz7bE1.gif'],
+ 'wink': ['https://i.waifu.pics/87KteDJ.gif',
+  'https://i.waifu.pics/87KteDJ.gif',
+  'https://i.waifu.pics/QmF2rf1.gif',
+  'https://i.waifu.pics/y1E0H4g.gif',
+  'https://i.waifu.pics/W4_OW_P.gif',
+  'https://i.waifu.pics/t2IcbQK.gif'],
+ 'poke': ['https://i.waifu.pics/s446j9L.gif',
+  'https://i.waifu.pics/JlDu4xg.gif',
+  'https://i.waifu.pics/A4SyFip.gif',
+  'https://i.waifu.pics/s446j9L.gif',
+  'https://i.waifu.pics/jWRdbHV.jpg',
+  'https://i.waifu.pics/SkfA6gM.gif'],
+ 'dance': ['https://i.waifu.pics/l0ysv60.gif',
+  'https://i.waifu.pics/aUJPpXN.gif',
+  'https://i.waifu.pics/jJCputQ.gif',
+  'https://i.waifu.pics/oI~t28j.gif',
+  'https://i.waifu.pics/iVDuV9y.gif',
+  'https://i.waifu.pics/u0uOEKf.gif'],
+ 'cringe': ['https://i.waifu.pics/mjqxv04.gif',
+  'https://i.waifu.pics/osLWoRP.gif',
+  'https://i.waifu.pics/gkB-aJ2.jpg',
+  'https://i.waifu.pics/jdZCreG.gif',
+  'https://i.waifu.pics/aV0bggk.gif',
+  'https://i.waifu.pics/zZXPRJY.gif'],
+ 'kill': ['https://i.waifu.pics/hGFuwrQ.gif',
+  'https://i.waifu.pics/aHcQUmi.gif',
+  'https://i.waifu.pics/lgsRSai.gif',
+  'https://i.waifu.pics/ETWB-ef.gif',
+  'https://i.waifu.pics/9b1NpBN.gif',
+  'https://i.waifu.pics/8uhQSdY.gif'],
+ 'highfive': ['https://i.waifu.pics/NUusyu4.gif',
+  'https://i.waifu.pics/UPcalVj.gif',
+  'https://i.waifu.pics/JvYGKhE.gif',
+  'https://i.waifu.pics/6oy99g3.gif',
+  'https://i.waifu.pics/gJaFVbX.gif',
+  'https://i.waifu.pics/Q_pkTt4.gif'],
+ 'pat': ['https://i.waifu.pics/rOU~HpB.gif',
+  'https://i.waifu.pics/kSE4Ypd.gif',
+  'https://i.waifu.pics/0x-pKQY.gif',
+  'https://i.waifu.pics/MqgjYTF.gif',
+  'https://i.waifu.pics/UQ~PSLN.gif',
+  'https://i.waifu.pics/I~znmj2.gif'],
+ 'kiss': ['https://i.waifu.pics/-DGDccm.gif',
+  'https://i.waifu.pics/I0fKKlq.gif',
+  'https://i.waifu.pics/aSe6WAS.gif',
+  'https://i.waifu.pics/6ApTQ4Z.gif',
+  'https://i.waifu.pics/h3IJio-.gif',
+  'https://i.waifu.pics/h3IJio-.gif']}
 
 
-def get_dominant_color(image_url):
-    image = Image.open(requests.get(image_url, stream=True).raw)
-    image = image.resize((16, 16))
-    r, g, b = image.split()
-    r = sum(i * j for i, j in zip(r.getdata(), [1, 4, 6, 4, 1]))
-    g = sum(i * j for i, j in zip(g.getdata(), [1, 4, 6, 4, 1]))
-    b = sum(i * j for i, j in zip(b.getdata(), [1, 4, 6, 4, 1]))
-    return '#{:02x}{:02x}{:02x}'.format(r, g, b)
 
 class funcmds(commands.Cog):
     def __init__(self, client):
@@ -98,19 +151,18 @@ class funcmds(commands.Cog):
     async def meme(self, ctx):
         await ctx.send(embed=self.get_meme())  # send embed with the meme
 
-    def get_gif(self, category, person, author):  # Get a gif from various gif sources
-        # categories = ["kick","happy","wink","poke","dance","cringe","neko","cat","dog","kill","highfive","happy"]
+    def get_gif(self, category, person, author, selfp:False):  # Get a gif from various gif sources
+        # categories = ["kick","happy","wink","poke","dance","cringe","neko","cat","dog","kill","highfive","happy","pat"]
         prefix = ""
         ishelp = False
         if person == None:  # check for variable
             person = random.choice(["himself..?", "themselves.."])
             noarg2 = True
-        if category == "kick" or category == "kill" or category == "highfive":  # check for category
+            
+        if category == "highfive":
             suffix = category + f"s {person}!"
-            apiurl = "https://api.waifu.pics/sfw/" + category
         elif category == "happy":
             suffix = "is happy :D!"
-            apiurl = "https://api.waifu.pics/sfw/" + category
         elif category == "wink" or category == "poke" or category == "cringe":
             replies = ["'s! whew", f"'s at {person}!"]
             if noarg2 == True and category == "wink" or category == "cringe":
@@ -118,38 +170,43 @@ class funcmds(commands.Cog):
             else:
                 reply = f"'s at {person}!"
             suffix = category + reply
-            apiurl = "https://api.waifu.pics/sfw/" + category
         elif category == "dance":
             suffix = f"dance's with {person}!"
-            apiurl = "https://api.waifu.pics/sfw/" + category
         elif category == "neko" or category == "cat":
             suffix = f"'s {category}! 🐈"
             apiurl = "https://api.thecatapi.com/v1/images/search"
         elif category == "waifu":
             suffix = "heres yer waifu"
-            apiurl = "https://api.waifu.pics/sfw/" + category
         elif category == "dog":
             suffix = random.choice([f"'s {category}! 🐶", "doggo!! 🐶"])
             apiurl = "https://api.thedogapi.com/v1/images/search"
         elif category == "kiss":
             suffix = random.choice([f"kisses {person}!", f"gives a peck to {person}!"])
-            apiurl = "https://api.waifu.pics/sfw/" + category
         elif category == "pat":
             suffix = random.choice([f"pats {person}!", f"gently pats {person}!"])
+        elif category == "kick" or category == "kill":  # check for category
+            if selfp == True:
+                suffix = f"aww, dont be so hard on yourself\n*pats* {author}"
+                author = ""
+                category = "pat"
+            else:
+                suffix = category + f"s {person}!\nMust've been a baka"
         elif category == "help":
             ishelp = True
         else:
-            prefix = "well" + " "
+            category = "cat"
+            prefix = "Well" + " "
             suffix = "thats a unknown category, heres a cat instead!"
             apiurl = "https://api.thecatapi.com/v1/images/search"
-        if ishelp == False:  # check if category is help, if yes get gif from the set apiurl
-            if apiurl.find('waifu') != -1:
-                url = json.loads(requests.get(apiurl).text)["url"]
-            else:
+            
+        if ishelp != True:  # check if category is help, if yes get gif from the set apiurl
+            if category in ["dog","cat"]:
                 url = json.loads(requests.get(apiurl).text)[0]["url"]
+            else:
+                url = random.choice(gif_lst[category])
             # color = get_dominant_color(url) # causes a lot of lag disabled for now
             embed = nc.Embed(description=prefix + author + " " + suffix, color=0x5ce8ed)
-            footer = random.choice([f"use `{dpfx}gif help` for more more categories", "uwu", "owo"])
+            footer = random.choice([f"use `{dpfx}gif help` for more more categories", "uwu", "OwO"])
             embed.set_footer(text=footer)
             embed.set_image(url=url)
         else:  # if help set embed to help menu
@@ -162,11 +219,13 @@ class funcmds(commands.Cog):
     @commands.command(aliases=['g'])
     async def gif(self, ctx, category=None, person: nc.Member = None):
         try:
-            try:
-                person = person.mention
-            except:
+            selfp = False
+            if person == ctx.author:
                 person = None
-            await ctx.send(embed=self.get_gif(category, person, ctx.message.author.mention))
+                selfp = True
+            if person is not None:
+                person = person.mention
+            await ctx.send(embed=self.get_gif(category, person, ctx.message.author.mention,selfp))
         except Exception as e:
             embed = nc.Embed(title="Something went wrong, try again later.", description=e)
             await ctx.send(embed=embed)
@@ -177,7 +236,7 @@ class funcmds(commands.Cog):
                         category: str = SlashOption(
                             name="category",
                             choices={"waifu": "waifu", "kick": "kick", "wink": "wink", "poke": "poke", "dance": "dance",
-                                     "cringe": "cringe", "neko": "neko", "cat": "cat", "dog": "dog", "kill": "kill",
+                                     "cringe": "cringe", "cat": "cat", "dog": "dog", "kill": "kill",
                                      "highfive": "highfive", "happy": "happy", "help": "help"},
                             description="Choose a category to get a gif from",
                         ),
@@ -185,18 +244,22 @@ class funcmds(commands.Cog):
                             name="person",
                             required=False,
                             description="Choose a person to send the GIF to.")):
-        try:
-            person = person.mention
-        except:
+        if interaction.author == person:
             person = None
-        await interaction.response.send_message(embed=self.get_gif(category, person, interaction.user.mention))
+            selfp = True
+        if person is not None:
+            person = person.mention
+        else:
+            person = None
+        await interaction.response.send_message(embed=self.get_gif(category, person, interaction.user.mention,selfp))
 
     @commands.command(aliases=['av'])
     async def avatar(self, ctx, *, avamember: nc.Member = None):
         if avamember == None:
             avamember = ctx.message.author
         avaurl = avamember.display_avatar.url
-        color = get_dominant_color(avaurl)
+        #color = get_dominant_color(avaurl)
+        color = 0xffffff
         embed = nc.Embed(title=avamember.name + "'s avatar", color=color)
         embed.set_image(url=avaurl)
         await ctx.send(embed=embed)
@@ -242,7 +305,7 @@ class funcmds(commands.Cog):
             embed.set_footer(text="Page: " + str(self.page + 1) + "/" + str(len(self.data)))
             return embed
 
-        @nextcord.ui.button(label='🡰', style=nextcord.ButtonStyle.green)
+        @nextcord.ui.button(label='⬅️', style=nextcord.ButtonStyle.green)
         async def prev(self, button, ictx):
             if await self.check_author(ictx) == False:
                 return
@@ -252,7 +315,7 @@ class funcmds(commands.Cog):
                 self.page -= 1
             await ictx.response.edit_message(embed=self.format_page(self.page), view=self)
 
-        @nextcord.ui.button(label='🡲', style=nextcord.ButtonStyle.green)
+        @nextcord.ui.button(label='➡️', style=nextcord.ButtonStyle.green)
         async def next(self, button, ictx):
             if await self.check_author(ictx) == False:
                 return
@@ -351,7 +414,6 @@ class funcmds(commands.Cog):
         dat = {'before': before, 'after': after}
         if chanid not in editdb.keys():
             editdb[chanid] = []
-        print("editdb: " + str(dat))
         editdb[chanid].insert(0, dat)
         if len(editdb[chanid]) > 5:
             editdb[chanid].pop(5)

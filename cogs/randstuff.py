@@ -10,11 +10,11 @@ def setup(client):
 class rand(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.author.bot:
+        if not message.author.bot:
             return
         if message.content == "is gaeeeeeeeeeee":
             await message.delete()
             return
         if "ur mum" in message.content:
             await message.delete()
-                     return
+            return
