@@ -115,7 +115,6 @@ class QUEUE():
                         return url, src, thumb, title  # return the url, source, thumbnail, and song title
                     except:
                         return ()
-      
             else:
                 src = "youtube"
                 ytdl_data = ytdl.extract_info(f"ytsearch:{args}", download=False)  # search for the song from youtube using youtube-dl
