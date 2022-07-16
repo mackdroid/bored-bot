@@ -2,7 +2,7 @@ if __name__ == "__main__":
     print("This is a cog, execute main.py!")
     exit()
 
-# supress sklearns annoying warnings
+# supress sklearn's annoying warnings
 import warnings
 
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -15,9 +15,9 @@ from nextcord import Interaction, SlashOption
 from nextcord.ext import commands
 from profanity_check import predict_prob  # for profanity filter
 
-# import settings from settings.json
+# import settings from settings.json and other variables
 vardb = json.load(open("settings.json"))
-
+whitelisted_ids = vardb["profCheck"].keys()  # get whitelisted ids
 
 # setup
 def setup(client):
@@ -72,7 +72,7 @@ class utils(commands.Cog):
             return
 
     # Eval Helpers
-    # Code shamelessly stolen from https://gist.github.com/vierofernando/c5796a78292b949341c98a5deaee8eda since my pea brain cant comprehend this stuff
+    # Code shamelessly stolen from https://gist.github.com/vierofernando/c5796a78292b949341c98a5deaee8eda since my pea brain can't comprehend this stuff
 
     def resolve_variable(self, variable):
         if hasattr(variable, "__iter__"):
@@ -108,7 +108,8 @@ class utils(commands.Cog):
             "os": os,
             "imp": __import__,
             "this": self,
-            "ctx": ctx
+            "ctx": ctx,
+            "client": self.client
         }
 
         try:
@@ -203,11 +204,10 @@ class utils(commands.Cog):
     async def on_message(self, message):
         if message.author == self.client.user:  # if message is from bot ignore
             return
-        whitelisted_ids = vardb["profCheck"].keys()  # get whitelisted ids
-        if str(message.guild.id) in whitelisted_ids and "damn" not in message.content:  # check if guild is whitelisted
+        if str(message.guild.id) in whitelisted_ids:  # check if guild is whitelisted
             msg_predict_prob = predict_prob([str(message.content)])[0] * 100
             # await message.channel.send("this message has a probability of " + str(msg_predict_prob)+ "% , containing profanity")
-            if int(msg_predict_prob) > 82:  # if message contains profanity
+            if int(msg_predict_prob) > 90:  # if message contains profanity
                 await message.delete()
                 channel = self.client.get_channel(vardb["profCheck"][str(message.guild.id)])  # get log channel
                 if channel is not None:

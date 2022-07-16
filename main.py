@@ -32,7 +32,7 @@ def main():
 
 @client.event
 async def on_ready():
-    print(f'We havelogged in as {client.user}')
+    print(f'We have logged in as {client.user}')
 
 
 if __name__ == '__main__':
