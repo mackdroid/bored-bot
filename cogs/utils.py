@@ -212,7 +212,7 @@ class utils(commands.Cog):
                 channel = self.client.get_channel(vardb["profCheck"][str(message.guild.id)])  # get log channel
                 if channel is not None:
                     embed = nc.Embed(title="Message Deleted",
-                                     description=f"{message.author.mention} has been deleted for containing a profanity of {msg_predict_prob}%")
+                                     description=f"Message sent by {message.author.mention} has been deleted: profanity - {msg_predict_prob}%")
                     embed.add_field(name="Message Content:", value=message.content)
                     await channel.send(embed=embed)
                 return

@@ -183,16 +183,21 @@ class PLAYER():
             await ctx.guild.change_voice_state(channel=ctx.author.voice.channel, self_mute=False, self_deaf=True)
             return True
         
-    def after(self, guildid, err):
+    def after(self, guildid, err=None):
         ctx = songqueue[guildid][0][4]
         nxt = QUEUE().next(ctx)
-        if nxt is None:
-            coro = ctx.send(embed=nc.Embed(title="Song ended.",
-                                           description="Queue is empty cannot proceed, add songs using the play/add command",
-                                           color=colors["success"]))
-        else:
-            url, src, title = nxt[0], nxt[1], nxt[3]
-            coro = ctx.send(embed=nc.Embed(title="Playing Next", description="**" + title + "**", color=colors[src]))
+        if err is not None:
+            embed = nc.Embed(title="Unable to play the next song, sorry. :(", description=str(e), color=colors["error"])
+            coro = ctx.send(embed=embed)
+        else:   
+            if nxt is None:
+                coro = ctx.send(embed=nc.Embed(title="Song ended.",
+                                            description="Queue is empty cannot proceed, add songs using the play/add command",
+                                            color=colors["success"]))
+            else:
+                url, src, title = nxt[0], nxt[1], nxt[3]
+                coro = ctx.send(embed=nc.Embed(title="Playing Next", description="**" + title + "**", color=colors[src]))
+                
         fut = asyncio.run_coroutine_threadsafe(coro, self.client.loop)
         if nxt is not None:
             self.player(ctx, url)
@@ -214,6 +219,7 @@ class PLAYER():
             return
         guild_id = ctx.guild.id
         voice = ctx.channel.guild.voice_client
+        ctxa = ctx
         if guild_id not in songqueue.keys():
             songqueue[guild_id] = []
         if voice.is_playing():
@@ -232,7 +238,7 @@ class PLAYER():
                 await message.edit(embed=embed)
             return
         try:
-            url, src, thumb, title, ctx = QUEUE().add(ctx, arg)
+            url, src, thumb, title, ctx = QUEUE().add(ctxa, arg)
             self.player(ctx, url)
             embed = nc.Embed(title=f"Now Playing: {title}", color=colors[src])
             embed.set_footer(text="Powered by odesli & ytdl!")
