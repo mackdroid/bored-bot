@@ -4,6 +4,8 @@ if __name__ == "__main__":
 
 import asyncio
 import json
+from turtle import pos
+from winreg import QueryInfoKey
 
 import nextcord as nc
 import requests
@@ -46,7 +48,6 @@ def setup(client):
         for voice in voices:
             client.loop.create_task(voice.disconnect())
     client.add_cog(music(client))
-
 
 class QUEUE():
     def now_playing(self, ctx):
@@ -134,7 +135,6 @@ class QUEUE():
         else:
             raise Exception("Song wasn't found.")
         
-
     def remove(self, ctx, id):
         if ctx.guild.id not in songqueue.keys():
             songqueue[ctx.guild.id] = []
@@ -183,16 +183,21 @@ class PLAYER():
             await ctx.guild.change_voice_state(channel=ctx.author.voice.channel, self_mute=False, self_deaf=True)
             return True
         
-    def after(self, guildid, err):
+    def after(self, guildid, err=None):
         ctx = songqueue[guildid][0][4]
         nxt = QUEUE().next(ctx)
-        if nxt is None:
-            coro = ctx.send(embed=nc.Embed(title="Song ended.",
-                                           description="Queue is empty cannot proceed, add songs using the play/add command",
-                                           color=colors["success"]))
-        else:
-            url, src, title = nxt[0], nxt[1], nxt[3]
-            coro = ctx.send(embed=nc.Embed(title="Playing Next", description="**" + title + "**", color=colors[src]))
+        if err is not None:
+            embed = nc.Embed(title="Unable to play the next song, sorry. :(", description=str(e), color=colors["error"])
+            coro = ctx.send(embed=embed)
+        else:   
+            if nxt is None:
+                coro = ctx.send(embed=nc.Embed(title="Song ended.",
+                                            description="Queue is empty cannot proceed, add songs using the play/add command",
+                                            color=colors["success"]))
+            else:
+                url, src, title = nxt[0], nxt[1], nxt[3]
+                coro = ctx.send(embed=nc.Embed(title="Playing Next", description="**" + title + "**", color=colors[src]))
+                
         fut = asyncio.run_coroutine_threadsafe(coro, self.client.loop)
         if nxt is not None:
             self.player(ctx, url)
@@ -214,6 +219,7 @@ class PLAYER():
             return
         guild_id = ctx.guild.id
         voice = ctx.channel.guild.voice_client
+        ctxa = ctx
         if guild_id not in songqueue.keys():
             songqueue[guild_id] = []
         if voice.is_playing():
@@ -232,7 +238,7 @@ class PLAYER():
                 await message.edit(embed=embed)
             return
         try:
-            url, src, thumb, title, ctx = QUEUE().add(ctx, arg)
+            url, src, thumb, title, ctx = QUEUE().add(ctxa, arg)
             self.player(ctx, url)
             embed = nc.Embed(title=f"Now Playing: {title}", color=colors[src])
             embed.set_footer(text="Powered by odesli & ytdl!")
@@ -242,27 +248,13 @@ class PLAYER():
             embed = nc.Embed(title="Unable to find the song, sorry. :(", description="Error:" + str(e), color=colors["error"])
             await ctx.send(embed=embed)
             return
-        # song = QUEUE().get_current_song(ctx)
-        # try:
-        #     url, src, thumb = song[0], song[1], song[2]
-            
-        # except Exception as e:
-        #     embed = nc.Embed(title="An Error Occured", description=e, color=colors["error"])
-        #     await ctx.send(embed=embed)
-        #     voice.stop()
-        #     nxt = QUEUE().next(ctx)
-        #     if nxt is None:
-        #         await ctx.send(embed=nc.Embed(title="Skipped song.",
-        #                                 description="Queue is empty cannot proceed, add songs using the play/add command",
-        #                                 color=colors["success"]))
-        #     else:
-        #         url, src, title = nxt[0], nxt[1], nxt[3]
-        #         ctx.send(embed=nc.Embed(title="Skipped song, Playing Next", description="**" + title + "**",
-        #                                 color=colors[src]))
 
-    async def skip(self, ctx, position: int = None):  # skip a song
+    async def skip(self, ctx, position: int = 0):  # skip a song
         check = await self.ensure_voice(ctx)
         if check is False:
+            return
+        if position != 0:
+            QUEUE.remove(ctx,position)
             return
         voice = ctx.channel.guild.voice_client
         try:
@@ -315,8 +307,8 @@ class music(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(name="skip", aliases=["s", "next"])  # skip the current song
-    async def command_skip(self, ctx):
-        await self.p.skip(ctx)
+    async def command_skip(self, ctx, pos):
+        await self.p.skip(ctx,pos)
 
     @commands.command(name="join", aliases=["j", "connect", "c"])
     async def command_join(self, ctx):
