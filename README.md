@@ -7,8 +7,8 @@ to setup the bot you need a `settings.py` which contains the token and other stu
 <details>
 <summary>sample settings.json</summary>
 
-```py
-vardb = {
+```json
+{
     "prefix": ".",
     "disc_token": "xxxxxxxxxxxxxxxxxxx",
 }
@@ -16,7 +16,9 @@ vardb = {
 
 </details>
 
-and don't forget to install the requirements using `pip install -r requirements.txt`
+This project uses [poetry](https://python-poetry.org/) to manage dependencies, run
+```poetry install```
+to install required dependencies
 
 # credits
 * [itspacchu](https://github.com/itspacchu) for help with various stuff
