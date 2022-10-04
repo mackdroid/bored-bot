@@ -4,9 +4,6 @@ if __name__ == "__main__":
 
 import asyncio
 import json
-from turtle import pos
-from winreg import QueryInfoKey
-
 import nextcord as nc
 import requests
 import youtube_dl

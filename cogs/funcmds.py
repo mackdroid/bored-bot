@@ -28,16 +28,6 @@ def setup(client):
 dpfx = settingsdb["prefix"]
 
 
-# # resize image to 1x1 pixels and return colour as hex
-# def get_dominant_color(image_url):
-#     response = requests.get(image_url)
-#     img = Image.open(BytesIO(response.content))
-#     # img = img.resize((1, 1), Image.NEAREST) # todo fix this awful shit
-#     data = list(img.getdata())
-#     rgb = random.choice(data)
-#     color = nc.Color.from_rgb(rgb[0], rgb[1], rgb[2])
-#     return color
-
 gif_lst = {'kick': ['https://i.waifu.pics/FxDWcmZ.gif',
   'https://i.waifu.pics/wZtL4zy.gif',
   'https://i.waifu.pics/BZ38S3s.gif',
