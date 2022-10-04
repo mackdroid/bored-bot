@@ -135,16 +135,7 @@ class utils(commands.Cog):
             await ctx.send('Cleared by {}'.format(ctx.author.mention), delete_after=3)
         except:
             await ctx.send('Unknown Error, perhaps check permissions?')
-
-    # @nc.slash_command( # Discord api doesnt have a proper permission system for slash commands
-    #     name="purge",
-    #     description="Purge chat content",
-    #     default_permission=False
-    # )
-    # async def slash_purge(self,interaction:Interaction,limit:int):
-    #     await interaction.channel.purge(limit=limit)
-    #     await interaction.response.send_message('Cleared by {}'.format(interaction.user.mention),delete_after=3)
-
+            
     @nc.slash_command(  # change bot status
         name="status",
         description="Set bot status!")
