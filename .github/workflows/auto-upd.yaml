@@ -1,0 +1,12 @@
+on:
+  pull_request:
+    branches:
+      - master
+    types: [closed]
+jobs:
+  check-bats-version:
+    runs-on: self-hosted
+    steps:
+        - run: |
+        cd /home/dmons/bored-bot && sudo su dmons -c ./pullre.sh 
+        sudo systemctl restart boredbot
