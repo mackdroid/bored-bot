@@ -405,5 +405,6 @@ class funcmds(commands.Cog):
         if chanid not in editdb.keys():
             editdb[chanid] = []
         editdb[chanid].insert(0, dat)
-        if len(editdb[chanid]) > 5:
-            editdb[chanid].pop(5)
+        n = 100
+        if len(editdb[chanid]) > n:
+            editdb[chanid].pop(n)
