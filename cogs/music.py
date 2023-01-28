@@ -227,7 +227,6 @@ class PLAYER():
                 embed = nc.Embed(title="Song already playing, added to Queue", description="**" + title + "**",
                                  color=colors[src])
                 if src != "fallback":
-                    embed.set_footer(text="Powered by odesli & ytdl!")
                 embed.set_thumbnail(url=thumb)
                 await message.edit(embed=embed)
             except Exception as e:
@@ -238,7 +237,6 @@ class PLAYER():
             url, src, thumb, title, ctx = QUEUE().add(ctxa, arg)
             self.player(ctx, url)
             embed = nc.Embed(title=f"Now Playing: {title}", color=colors[src])
-            embed.set_footer(text="Powered by odesli & ytdl!")
             embed.set_thumbnail(url=thumb)
             await ctx.send(embed=embed)
         except Exception as e:
@@ -296,7 +294,8 @@ class music(commands.Cog):
                 if i == songqueue[guild_id][0]:
                     continue
                 id = songqueue[guild_id].index(i)
-                embed.add_field(name=str(id) + ". " + i[3], value=f"`Position {id}`", inline=False)
+                # embed.add_field(name=str(id) + ". " + i[3], value=f"`Position {id}`", inline=False)
+                embed.add_field(name=str(id) + ". " + i[3], value=f"-------------------------------", inline=False)
         else:
             embed.add_field(name="No songs in queue",
                             value="songs are added automatically to queue when there is already a song playing",
