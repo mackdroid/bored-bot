@@ -2,6 +2,7 @@ if __name__ == "__main__":
     print("This is a cog, execute main.py!")
     exit()
 
+from ast import arg
 import json
 import random
 from io import BytesIO
@@ -371,6 +372,10 @@ class funcmds(commands.Cog):
             await ctx.send(embed=embed)
             return
 
+    @commands.command()
+    async def choose(ctx,*argv):
+        await ctx.send("I Choose",random.choice(argv),"!")        
+    
     @commands.Cog.listener()
     async def on_message_delete(self, message):
         if message.content.startswith(dpfx):
