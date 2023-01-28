@@ -8,5 +8,5 @@ jobs:
     runs-on: self-hosted
     steps:
         - run: |
-             cd /home/dmons/bored-bot && sudo runuser -l dmons -c ./pullre.sh
+             cd /home/dmons/bored-bot && sudo su dmons -c ./pullre.sh
              sudo systemctl restart boredbot
