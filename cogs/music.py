@@ -246,7 +246,7 @@ class PLAYER():
             await ctx.send(embed=embed)
             return
 
-    async def skip(self, ctx, position: int = 0):  # skip a song
+    async def skip(self, ctx, position):  # skip a song
         check = await self.ensure_voice(ctx)
         if check is False:
             return
@@ -304,7 +304,9 @@ class music(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(name="skip", aliases=["s", "next"])  # skip the current song
-    async def command_skip(self, ctx, pos):
+    async def command_skip(self, ctx, pos=0):
+        if type(pos) not int
+            pos = 0
         await self.p.skip(ctx,pos)
 
     @commands.command(name="join", aliases=["j", "connect", "c"])
