@@ -227,8 +227,8 @@ class PLAYER():
                 embed = nc.Embed(title="Song already playing, added to Queue", description="**" + title + "**",
                                  color=colors[src])
                 if src != "fallback":
-                embed.set_thumbnail(url=thumb)
-                await message.edit(embed=embed)
+                    embed.set_thumbnail(url=thumb)
+                    await message.edit(embed=embed)
             except Exception as e:
                 embed = nc.Embed(title="Unable to play the song, sorry. :(", description=str(e), color=colors["error"])
                 await message.edit(embed=embed)
