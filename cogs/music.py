@@ -132,7 +132,7 @@ class QUEUE():
         else:
             raise Exception("Song wasn't found.")
         
-    def remove(self, ctx, id):
+    def remove(ctx, id):
         if ctx.guild.id not in songqueue.keys():
             songqueue[ctx.guild.id] = []
         songqueue[ctx.guild.id].pop(id)
@@ -196,7 +196,9 @@ class PLAYER():
                                             color=colors["success"]))
             else:
                 url, src, title = nxt[0], nxt[1], nxt[3]
-                coro = ctx.send(embed=nc.Embed(title="Playing Next", description="**" + title + "**", color=colors[src]))
+                embed = nc.Embed(title="Playing Next", description="**" + title + "**", color=colors[src])
+                # embed.set_thumbnail()
+                coro = ctx.send(embed=embed)
                 
         fut = asyncio.run_coroutine_threadsafe(coro, self.client.loop)
         if nxt is not None:
@@ -251,7 +253,7 @@ class PLAYER():
         if check is False:
             return
         if position != 0:
-            QUEUE.remove(ctx,position)
+            QUEUE.remove(ctx,id=position)
             return
         voice = ctx.channel.guild.voice_client
         try:
