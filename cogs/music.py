@@ -80,7 +80,7 @@ class QUEUE():
         songqueue[guild_id] = []
         return None
 
-    def args_to_url(self, ctx, args):  # convert parse search query to ytdl urls
+    def args_to_url(self, ctx, args):  # parse search query to ytdl urls
         if type(args) is tuple:
             args = " ".join(args)
         with YoutubeDL(ytdlOpts) as ytdl:
@@ -189,7 +189,7 @@ class PLAYER():
         else:   
             if nxt is None:
                 coro = ctx.send(embed=nc.Embed(title="Song ended.",
-                                            description="Queue is empty cannot proceed, add songs using the play/add command",
+                                            description="No next song to play, you can add a song to queue using the play command",
                                             color=colors["success"]))
             else:
                 url, src, title = nxt[0], nxt[1], nxt[3]
@@ -206,8 +206,8 @@ class PLAYER():
 
     async def play(self, ctx, arg):  # play a song
         if arg == ():
-            embed = nc.Embed(title="Please enter a search query.",
-                             description="Most music streamings site links are accepted, if otherwise query terms will be considered as youtube search terms",
+            embed = nc.Embed(title="Please enter the name of the song you want me playing.",
+                             description="I will look it up on youtube, you can even give me spotify or apple music links",
                              color=0xf54257)
             await ctx.send(embed=embed)
             return
@@ -226,9 +226,8 @@ class PLAYER():
                 url, src, thumb, title, ctx = QUEUE().add(ctx, arg)
                 embed = nc.Embed(title="Song already playing, added to Queue", description="**" + title + "**",
                                  color=colors[src])
-                if src != "fallback":
-                    embed.set_thumbnail(url=thumb)
-                    await message.edit(embed=embed)
+                embed.set_thumbnail(url=thumb)
+                await message.edit(embed=embed)
             except Exception as e:
                 embed = nc.Embed(title="Unable to play the song, sorry. :(", description=str(e), color=colors["error"])
                 await message.edit(embed=embed)
@@ -236,7 +235,7 @@ class PLAYER():
         try:
             url, src, thumb, title, ctx = QUEUE().add(ctxa, arg)
             self.player(ctx, url)
-            embed = nc.Embed(title=f"Now Playing: {title}", color=colors[src])
+            embed = nc.Embed(title=f"Now Playing",description="{title}", color=colors[src])
             embed.set_thumbnail(url=thumb)
             await ctx.send(embed=embed)
         except Exception as e:
@@ -244,7 +243,7 @@ class PLAYER():
             await ctx.send(embed=embed)
             return
 
-    async def skip(self, ctx, position):  # skip a song
+    async def skip(self, ctx, position=0):  # skip a song
         check = await self.ensure_voice(ctx)
         if check is False:
             return
