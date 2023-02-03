@@ -181,7 +181,10 @@ class PLAYER():
             return True
         
     def after(self, guildid, err=None):
-        ctx = songqueue[guildid][0][4]
+        try:
+            ctx = songqueue[guildid][0][4]
+        except IndexError:
+            return
         nxt = QUEUE().next(ctx)
         if err is not None:
             embed = nc.Embed(title="Unable to play the next song, sorry. :(", description=str(e), color=colors["error"])
@@ -235,7 +238,7 @@ class PLAYER():
         try:
             url, src, thumb, title, ctx = QUEUE().add(ctxa, arg)
             self.player(ctx, url)
-            embed = nc.Embed(title=f"Now Playing",description="{title}", color=colors[src])
+            embed = nc.Embed(title=f"Now Playing",description=title, color=colors[src])
             embed.set_thumbnail(url=thumb)
             await ctx.send(embed=embed)
         except Exception as e:
@@ -302,18 +305,12 @@ class music(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(name="skip", aliases=["s", "next"])  # skip the current song
-    async def command_skip(self, ctx, pos=0):
-        if type(pos) not int
-            pos = 0
+    async def command_skip(self, ctx, pos:int=0):
         await self.p.skip(ctx,pos)
 
     @commands.command(name="join", aliases=["j", "connect", "c"])
     async def command_join(self, ctx):
         await self.p.ensure_voice(ctx)
-
-    @commands.command()
-    async def dump(self, ctx):
-        ctx.send(songqueue)
 
     @commands.command(name="stop", aliases=["st", "end", "fuckoff"])  # stop the bot from playing music
     async def command_stop(self, ctx):
