@@ -6,7 +6,7 @@ import nextcord
 from nextcord.ext import commands
 
 settingsdb = json.load(open("settings.json"))
-client = commands.Bot(command_prefix=commands.when_mentioned_or(settingsdb["prefix"]), intents=nextcord.Intents.all())
+client = commands.Bot(settingsdb["prefix"], intents=nextcord.Intents.all())
 
 
 def main():

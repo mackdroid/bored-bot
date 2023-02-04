@@ -96,16 +96,15 @@ class funcmds(commands.Cog):
     def __init__(self, client):
         self.client = client
 
+    @commands.command()
+    async def choose(ctx,*argv):
+        await ctx.send("I Choose",random.choice(argv),"!") 
+
     @nc.slash_command(name="toss",  # Toss a coin
                       description="Toss a coin, accepts Heads and Tails as input.",
                       )
     async def flip(self,
                    interaction: Interaction,
-                   side=SlashOption(
-                       name="side",
-                       description="Choose a side of the coin.",
-                       required=True,
-                       choices={"Heads": "Heads", "Tails": "Tails"}),
                    reason=SlashOption(
                        name="reason",
                        description="Reason for tossing the coin.",
@@ -120,10 +119,6 @@ class funcmds(commands.Cog):
             suffix = " for {}".format(reason)
         embed = nc.Embed(
             title=f"The 🪙 flipped to {random.choice(coin)}" + suffix + "!")  # choose random choice and embed and reply
-        embed.add_field(
-            name="Your choice",
-            value=f"{side}"
-        )
         await interaction.edit_original_message(embeds=[embed])
 
     # def get_meme(self):  # Get a meme from reddit
@@ -370,16 +365,13 @@ class funcmds(commands.Cog):
         except KeyError:
             embed = nc.Embed(title="No messages have been edited in this channel yet.", description="How unfortunate!")
             await ctx.send(embed=embed)
-            return
-
-    @commands.command()
-    async def choose(ctx,*argv):
-        await ctx.send("I Choose",random.choice(argv),"!")        
+            return       
     
     @commands.Cog.listener()
     async def on_message_delete(self, message):
-        if message.content.startswith(dpfx):
-            return
+        for i in dpfx:
+            if message.content.startswith(i):
+                return
         if message.author.bot == True:
             return
         if message.author.id == self.client.user.id:
@@ -397,8 +389,9 @@ class funcmds(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):
-        if before.content.startswith(dpfx):
-            return
+        for i in dpfx:
+            if before.content.startswith(i):
+                return
         if before.author.bot == True:
             return
         if before.author.id == self.client.user.id:
