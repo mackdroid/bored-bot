@@ -4,3 +4,4 @@ settings.py
 __pycache__/
 poetry.lock
 .idea/
+settings.json
