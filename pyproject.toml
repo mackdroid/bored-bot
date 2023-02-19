@@ -13,6 +13,7 @@ asyncio = "^3.4.3"
 youtube_dl = "^2021.12.17"
 nextcord = "^2.0.0-alpha.6"
 nextcord-ext-menus = "^1.5.2"
+revChatGPT = "^2.3.2"
 
 [tool.poetry.dev-dependencies]
 
