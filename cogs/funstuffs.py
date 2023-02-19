@@ -10,7 +10,6 @@ from io import BytesIO
 import nextcord
 import nextcord as nc
 import requests
-from PIL import Image
 from nextcord import Interaction, SlashOption
 from nextcord.ext import commands
 
