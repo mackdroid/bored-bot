@@ -243,10 +243,19 @@ class funcmds(commands.Cog):
         if avamember == None:
             avamember = ctx.message.author
         avaurl = avamember.display_avatar.url
-        #color = get_dominant_color(avaurl)
         color = 0xffffff
+        #color = get_dominant_color(avaurl)
         embed = nc.Embed(title=avamember.name + "'s avatar", color=color)
         embed.set_image(url=avaurl)
+        await ctx.send(embed=embed)
+        
+    @commands.command(aliases=['sav'])
+    async def server_avatar(self, ctx):
+        guild = ctx.guild
+        color = 0xffffff
+        #color = get_dominant_color(guild.icon.url)
+        embed = nc.Embed(title=guild.name + "'s Server Icon", color=color)
+        embed.set_image(url=guild.icon.url)
         await ctx.send(embed=embed)
 
     class SnipePagination(nextcord.ui.View):
@@ -383,8 +392,9 @@ class funcmds(commands.Cog):
         if chanid not in snipedb.keys():
             snipedb[chanid] = []
         snipedb[chanid].insert(0, message)
-        if len(snipedb[chanid]) > 5:
-            snipedb[chanid].pop(5)
+        n = 5
+        if len(snipedb[chanid]) > n:
+            snipedb[chanid].pop(n)
 
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):
@@ -402,6 +412,6 @@ class funcmds(commands.Cog):
         if chanid not in editdb.keys():
             editdb[chanid] = []
         editdb[chanid].insert(0, dat)
-        n = 100
+        n = 5
         if len(editdb[chanid]) > n:
             editdb[chanid].pop(n)
