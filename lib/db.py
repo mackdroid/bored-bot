@@ -39,14 +39,14 @@ class DB():
     def del_val(self,key,root=None):
         db = self.root_handle(root)
         if key in db.keys():
-            self.db[key]=None
+            db[key]=None
             self.write()
         else:
             raise KeyError
         
     def del_key(self,key,root=None):
         db = self.root_handle(root)
-        del self.db[key]
+        del db[key]
         self.write()
 
     
