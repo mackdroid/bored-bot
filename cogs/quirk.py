@@ -11,8 +11,9 @@ def setup(client):
 class quirk(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message):
-        if "https://instagram.com" in message.content:
+        if "https://www.instagram.com/reel" in message.content:
             webhook = await message.channel.create_webhook(name='hooker')
             await webhook.send(content=re.sub(r'instagram\.com', 'ddinstagram.com', message.content),avatar_url = message.author.avatar.url,username=message.author.display_name)
+            await webhook.delete()
             await message.delete()
             return
