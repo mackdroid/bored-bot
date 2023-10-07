@@ -120,21 +120,21 @@ class funcmds(commands.Cog):
             title=f"The 🪙 flipped to {random.choice(coin)}" + suffix + "!")  # choose random choice and embed and reply
         await interaction.edit_original_message(embeds=[embed])
 
-    # def get_meme(self):  # Get a meme from reddit
-    #     meme = json.loads(requests.get("https://meme-api.herokuapp.com/gimme").text)  # GET meme from api
-    #     embed = nc.Embed(title=meme["title"])  # create embed
-    #     embed.set_footer(text="u/" + meme["author"] + " - r/" + meme["subreddit"])
-    #     embed.set_image(url=meme["url"])
-    #     return embed  # return meme with embed containing meme
+    def get_meme(self):  # Get a meme from reddit
+        meme = json.loads(requests.get("https://meme-api.herokuapp.com/gimme").text)  # GET meme from api
+        embed = nc.Embed(title=meme["title"])  # create embed
+        embed.set_footer(text="u/" + meme["author"] + " - r/" + meme["subreddit"])
+        embed.set_image(url=meme["url"])
+        return embed  # return meme with embed containing meme
 
-    # @nc.slash_command(name="meme",  # Meme slash comand
-    #                   description="Get a random meme from reddit")
-    # async def meme_slash(self, interaction: Interaction):
-    #     await interaction.response.send_message(embed=self.get_meme())  # send meme with embed
+    @nc.slash_command(name="meme",  # Meme slash comand
+                      description="Get a random meme from reddit")
+    async def meme_slash(self, interaction: Interaction):
+        await interaction.response.send_message(embed=self.get_meme())  # send meme with embed
 
-    # @commands.command(aliases=['m'])  # Meme command
-    # async def meme(self, ctx):
-    #     await ctx.send(embed=self.get_meme())  # send embed with the meme
+    @commands.command(aliases=['m'])  # Meme command
+    async def meme(self, ctx):
+        await ctx.send(embed=self.get_meme())  # send embed with the meme
 
     def get_gif(self, category, person, author, selfp:False):  # Get a gif from various gif sources
         # categories = ["kick","happy","wink","poke","dance","cringe","neko","cat","dog","kill","highfive","happy","pat"]
