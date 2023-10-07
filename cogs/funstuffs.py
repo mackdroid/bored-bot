@@ -99,26 +99,26 @@ class funcmds(commands.Cog):
     async def choose(ctx,*argv):
         await ctx.send("I Choose",random.choice(argv),"!") 
 
-    @nc.slash_command(name="toss",  # Toss a coin
-                      description="Toss a coin, accepts Heads and Tails as input.",
-                      )
-    async def flip(self,
-                   interaction: Interaction,
-                   reason=SlashOption(
-                       name="reason",
-                       description="Reason for tossing the coin.",
-                       required=False)
-                   ):
-        embed = nc.Embed(title="Tossing a coin...")
-        await interaction.response.send_message(embeds=[embed])
-        coin = ["Heads", "Tails"]
-        if reason is None:  # check for reason if none is given set suffix to empty string
-            suffix = ""
-        else:
-            suffix = " for {}".format(reason)
-        embed = nc.Embed(
-            title=f"The 🪙 flipped to {random.choice(coin)}" + suffix + "!")  # choose random choice and embed and reply
-        await interaction.edit_original_message(embeds=[embed])
+    # @nc.slash_command(name="toss",  # Toss a coin
+    #                   description="Toss a coin, accepts Heads and Tails as input.",
+    #                   )
+    # async def flip(self,
+    #                interaction: Interaction,
+    #                reason=SlashOption(
+    #                    name="reason",
+    #                    description="Reason for tossing the coin.",
+    #                    required=False)
+    #                ):
+    #     embed = nc.Embed(title="Tossing a coin...")
+    #     await interaction.response.send_message(embeds=[embed])
+    #     coin = ["Heads", "Tails"]
+    #     if reason is None:  # check for reason if none is given set suffix to empty string
+    #         suffix = ""
+    #     else:
+    #         suffix = " for {}".format(reason)
+    #     embed = nc.Embed(
+    #         title=f"The 🪙 flipped to {random.choice(coin)}" + suffix + "!")  # choose random choice and embed and reply
+    #     await interaction.edit_original_message(embeds=[embed])
 
     def get_meme(self):  # Get a meme from reddit
         meme = json.loads(requests.get("https://meme-api.herokuapp.com/gimme").text)  # GET meme from api
@@ -127,10 +127,10 @@ class funcmds(commands.Cog):
         embed.set_image(url=meme["url"])
         return embed  # return meme with embed containing meme
 
-    @nc.slash_command(name="meme",  # Meme slash comand
-                      description="Get a random meme from reddit")
-    async def meme_slash(self, interaction: Interaction):
-        await interaction.response.send_message(embed=self.get_meme())  # send meme with embed
+    # @nc.slash_command(name="meme",  # Meme slash comand
+    #                   description="Get a random meme from reddit")
+    # async def meme_slash(self, interaction: Interaction):
+    #     await interaction.response.send_message(embed=self.get_meme())  # send meme with embed
 
     @commands.command(aliases=['m'])  # Meme command
     async def meme(self, ctx):
@@ -215,28 +215,28 @@ class funcmds(commands.Cog):
             embed = nc.Embed(title="Something went wrong, try again later.", description=e)
             await ctx.send(embed=embed)
 
-    @nc.slash_command(name="gif",  # Send a gif from random apis
-                      description="Send a GIF from different categories")
-    async def gif_slash(self, interaction: Interaction,
-                        category: str = SlashOption(
-                            name="category",
-                            choices={"waifu": "waifu", "kick": "kick", "wink": "wink", "poke": "poke", "dance": "dance",
-                                     "cringe": "cringe", "cat": "cat", "dog": "dog", "kill": "kill",
-                                     "highfive": "highfive", "happy": "happy", "help": "help"},
-                            description="Choose a category to get a gif from",
-                        ),
-                        person: nc.Member = SlashOption(
-                            name="person",
-                            required=False,
-                            description="Choose a person to send the GIF to.")):
-        if interaction.author == person:
-            person = None
-            selfp = True
-        if person is not None:
-            person = person.mention
-        else:
-            person = None
-        await interaction.response.send_message(embed=self.get_gif(category, person, interaction.user.mention,selfp))
+    # @nc.slash_command(name="gif",  # Send a gif from random apis
+    #                   description="Send a GIF from different categories")
+    # async def gif_slash(self, interaction: Interaction,
+    #                     category: str = SlashOption(
+    #                         name="category",
+    #                         choices={"waifu": "waifu", "kick": "kick", "wink": "wink", "poke": "poke", "dance": "dance",
+    #                                  "cringe": "cringe", "cat": "cat", "dog": "dog", "kill": "kill",
+    #                                  "highfive": "highfive", "happy": "happy", "help": "help"},
+    #                         description="Choose a category to get a gif from",
+    #                     ),
+    #                     person: nc.Member = SlashOption(
+    #                         name="person",
+    #                         required=False,
+    #                         description="Choose a person to send the GIF to.")):
+    #     if interaction.author == person:
+    #         person = None
+    #         selfp = True
+    #     if person is not None:
+    #         person = person.mention
+    #     else:
+    #         person = None
+    #     await interaction.response.send_message(embed=self.get_gif(category, person, interaction.user.mention,selfp))
 
     @commands.command(aliases=['av'])
     async def avatar(self, ctx, *, avamember: nc.Member = None):
