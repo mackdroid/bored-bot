@@ -127,15 +127,12 @@ class utils(commands.Cog):
 
         del args, code, silent
 
+
     @commands.command(pass_context=True)  # purge command for deleting messages
-    @commands.has_permissions(administrator=True)
-    async def purge(self, ctx, limit: int):
-        try:
-            await ctx.channel.purge(limit=limit)
-            await ctx.send('Cleared by {}'.format(ctx.author.mention), delete_after=3)
-        except:
-            await ctx.send('Unknown Error, perhaps check permissions?')
-            
+    async def sauce(self, ctx):
+        ctx.send("send puww wequest senpai rawr x3\nhttps://github.com/mackdroid/bored-bot")
+
+
     @nc.slash_command(  # change bot status
         name="status",
         description="Set bot status!")
